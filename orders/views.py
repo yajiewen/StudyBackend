@@ -1342,8 +1342,8 @@ def get_take_order_info(request,usr_email):
             tab_obj1 = '' #order_table1 表中的订单信息
 
             try:
-                tab_obj = models.Table.objects.filter(order_worker_email=order_worker_email).values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
-                tab_obj1 = models.Table1.objects.filter(order_worker_email=order_worker_email).values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj = models.Table.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj1 = models.Table1.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
             except ObjectDoesNotExist:
                 print('ger order error')
             order_info_list = list(tab_obj) #获取订单信息构成的字典列表
@@ -1436,8 +1436,8 @@ def get_release_order_info(request,usr_email):
             tab_obj1 = '' #order_table1 表中的订单信息
 
             try:
-                tab_obj = models.Table.objects.filter(order_boss_email=order_boss_email).values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
-                tab_obj1 = models.Table1.objects.filter(order_boss_email=order_boss_email).values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj = models.Table.objects.filter(order_boss_email=order_boss_email).order_by('-order_start_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj1 = models.Table1.objects.filter(order_boss_email=order_boss_email).order_by('-order_start_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
             except ObjectDoesNotExist:
                 print('ger order error')
             order_info_list = list(tab_obj) #获取订单信息构成的字典列表
@@ -1600,7 +1600,7 @@ def get_order_to_take(request,order_teaching_grade,order_teaching_subjects):
 
 
 """
-------获取待接单表------
+------发送上课通知------
 ------
 
 前端请求方法：POST
