@@ -1080,7 +1080,7 @@ def worker_ask_complete(request):
             tab_objf = models.Table.objects.filter(order_token=order_token,order_worker_email=order_worker_email,order_status=TAKEOVER)
             if tab_objf.exists():
                 #更新订单信息
-                tab_objf.update(order_status=APPLY_COMPLETE,order_is_worker_ask_complet=WORKER_ASK_COMPLETE)
+                tab_objf.update(order_status=APPLY_COMPLETE,order_is_worker_ask_complet=WORKER_ASK_COMPLETE,order_complet_time=timezone.now())
                 response_data['ask_success'] = 'yes'
                 response_data['order_exist'] = 'yes'
                 response_data['order_status'] = APPLY_COMPLETE
