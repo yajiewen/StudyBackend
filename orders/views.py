@@ -540,6 +540,7 @@ def boss_cancel_order(request):
                     order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
                     order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
                     order_is_boss_ask_refund = tab_obj.order_is_boss_ask_refund,
+                    order_refund_reason = tab_obj.order_refund_reason,
                     order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund,
                     order_refund_money = tab_obj.order_refund_money,
                     order_teaching_grade = tab_obj.order_teaching_grade,
@@ -582,6 +583,7 @@ def boss_cancel_order(request):
                         order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
                         order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
                         order_is_boss_ask_refund = tab_obj.order_is_boss_ask_refund,
+                        order_refund_reason = tab_obj.order_refund_reason,
                         order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund,
                         order_refund_money = tab_obj.order_refund_money,
                         order_teaching_grade = tab_obj.order_teaching_grade,
@@ -625,6 +627,7 @@ def boss_cancel_order(request):
     邮箱 uemail:
     订单号 otoken:
     退款金额 remoney:
+    退款原因 reason:
 
 api:127.0.0.1:8080/orders/brefundorder/
 后端返回值:
@@ -660,7 +663,9 @@ def boss_refund_order(request):
         order_token = request.POST.get('otoken')
         #获取退款金额
         order_refund_money = float(request.POST.get('remoney'))
-
+        #获取退款原因
+        order_refund_reason = request.POST.get('reason')
+        print (order_refund_reason)
         response_data = {
             'is_login':'no',
             'order_exist':'no',
@@ -705,6 +710,7 @@ def boss_refund_order(request):
                                 order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
                                 order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
                                 order_is_boss_ask_refund = BOSS_ASK_REFUND,#----------------
+                                order_refund_reason = order_refund_reason, #----------------
                                 order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund,
                                 order_refund_money = order_refund_money,#-----------------
                                 order_teaching_grade = tab_obj.order_teaching_grade,
@@ -768,7 +774,8 @@ def boss_refund_order(request):
                         models.Table.objects.filter(order_token=order_token,order_boss_email=order_boss_email).update(
                         order_is_boss_ask_refund=BOSS_ASK_REFUND,
                         order_refund_money=order_refund_money,
-                        order_status=NEGOTIATE_REFUND)
+                        order_status=NEGOTIATE_REFUND,
+                        order_refund_reason= order_refund_reason,)
 
                         #给老师发送提醒邮件
                         subject = 'Edu 订单申请退款'
@@ -833,7 +840,8 @@ def boss_cancel_refund(request):
                 models.Table.objects.filter(order_boss_email=order_boss_email,order_token=order_token,order_status=NEGOTIATE_REFUND).update(
                     order_refund_money=order_refund_money,
                     order_status=order_status,
-                    order_is_boss_ask_refund=order_is_boss_ask_refund)
+                    order_is_boss_ask_refund=order_is_boss_ask_refund,
+                    order_refund_reason ='')
                 
                 #更新回复信息
                 response_data['is_login'] = 'yes'
@@ -948,6 +956,7 @@ def worker_agree_refund(request):
                     order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
                     order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
                     order_is_boss_ask_refund = tab_obj.order_is_boss_ask_refund,
+                    order_refund_reason = tab_obj.order_refund_reason,
                     order_is_worker_agree_refund = WORKER_AGREE_REFUND, #--------
                     order_refund_money = tab_obj.order_refund_money,
                     order_teaching_grade = tab_obj.order_teaching_grade,
@@ -1155,6 +1164,7 @@ def boss_agree_complete(request):
                     order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
                     order_is_boss_agree_complet = BOSS_AGREEE_COMPLETE, #---------------
                     order_is_boss_ask_refund = tab_obj.order_is_boss_ask_refund,
+                    order_refund_reason = tab_obj.order_refund_reason,
                     order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund, 
                     order_refund_money = tab_obj.order_refund_money,
                     order_teaching_grade = tab_obj.order_teaching_grade,

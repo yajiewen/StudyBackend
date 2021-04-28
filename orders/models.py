@@ -14,6 +14,7 @@ class Table(models.Model): #进行中的订单放在这个表（状态为这些�
     order_is_worker_ask_complet = models.IntegerField(default=0) #(0:未申请完成订单 1:申请完成订单)
     order_is_boss_agree_complet = models.IntegerField(default=0) #(0:未处理 1:同意完成订单)
     order_is_boss_ask_refund = models.IntegerField(default=0) #(0:未申请退款 1:申请退款)
+    order_refund_reason = models.CharField(max_length=500)  #退款原因
     order_is_worker_agree_refund = models.IntegerField(default=0) #(0:未处理 1:同意退款 2.拒绝退款)
     order_refund_money = models.FloatField(default=0) #发单者申请退款金额
     #订单需求信息
@@ -44,6 +45,7 @@ class Table1(models.Model): #结束的订单放在这个表（状态为这些的
     order_status = models.IntegerField(default=0) #订单状态( 3:完成  5.退款成功 6.订单已取消  )
     order_is_worker_ask_complet = models.IntegerField(default=0) #(0:未申请完成订单 1:申请完成订单)
     order_is_boss_ask_refund = models.IntegerField(default=0) #(0:未申请退款 1:申请退款)
+    order_refund_reason = models.CharField(max_length=500)  #退款原因
     order_is_boss_agree_complet = models.IntegerField(default=0) #(0:未处理 1:同意完成订单 )
     order_is_worker_agree_refund = models.IntegerField(default=0) #(0:未处理 1:同意退款 2.拒绝退款)
     order_refund_money = models.FloatField(default=0) #发单者申请退款金额
