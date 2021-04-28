@@ -1093,6 +1093,18 @@ def worker_ask_complete(request):
                 response_data['ask_success'] = 'yes'
                 response_data['order_exist'] = 'yes'
                 response_data['order_status'] = APPLY_COMPLETE
+                #获取订单信息
+                tab_obj = models.Table.objects.get(order_token=order_token,order_worker_email=order_worker_email) 
+                #给老板发送邮件信息提醒收货
+                subject = 'Edu 您的订单已完成请前往确认'
+                message = tab_obj.order_boss_email + '您的家教订单：'+order_token + tab_obj.order_teaching_grade + tab_obj.order_teaching_subjects + '已完成,请及时前往确认(未确认则3天后自动确认)' 
+                from_email = 'eudtocher@163.com'
+                recept_email =[tab_obj.order_boss_email]  #接收可以有多个人
+
+                try:
+                    send_mail(subject, message, from_email, recept_email)
+                except BadHeaderError:
+                    print('send email falied')
 
                 return JsonResponse(response_data)
 
@@ -1185,6 +1197,15 @@ def boss_agree_complete(request):
                 tab_objf.delete()
                 response_data['agree_success'] = 'yes'
                 response_data['order_status'] = COMPLETE
+                #给老师发送结单信息
+                subject = 'Edu 您的订单对方已同意结单'
+                message = worker_info.usr_email + '您的家教订单：'+order_token + tab_obj.order_teaching_grade + tab_obj.order_teaching_subjects + '已入账' +str(tab_obj.order_total_money)+'元,保证金'+str(tab_obj.order_worker_earnest_money)+ '元' 
+                from_email = 'eudtocher@163.com'
+                recept_email =[worker_info.usr_email]  #接收可以有多个人
+                try:
+                    send_mail(subject, message, from_email, recept_email)
+                except BadHeaderError:
+                    print('send email falied')
 
                 return JsonResponse(response_data)
             else:
