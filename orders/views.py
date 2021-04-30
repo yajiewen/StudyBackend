@@ -1553,78 +1553,30 @@ def get_order_to_take(request,order_teaching_grade,order_teaching_subjects):
         }
         
         #开始获取订单
-        if order_teaching_grade == 'no' and order_teaching_subjects == 'no':
-            order_list = models.Table.objects.values( 
-            'order_token',
-            'order_boss_email',
-            'order_teaching_grade',
-            'order_teaching_subjects',
-            'order_hourly_money',
-            'order_teaching_time',
-            'order_total_money',).filter(order_status=PAID)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  智能获取待接的单
-            
-            order_list = list(order_list)
+        if order_teaching_grade == 'no':
+            order_teaching_grade = ''
+        if order_teaching_subjects == 'no':
+            order_teaching_subjects = ''
 
-            response_data['is_get'] = 'yes'
-            response_data['order_num'] = len(order_list)
-            response_data['orders'].extend(order_list)
-            
+        order_list = models.Table.objects.values( 
+        'order_token',
+        'order_boss_email',
+        'order_teaching_grade',
+        'order_teaching_subjects',
+        'order_hourly_money',
+        'order_teaching_time',
+        'order_total_money',
+        'order_boss_require',).filter(order_status=PAID,order_teaching_grade__contains=order_teaching_grade,order_teaching_subjects__contains=order_teaching_subjects)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  模糊匹配
+        
+        order_list = list(order_list)
 
-            return JsonResponse(response_data)
-        else:
-            if order_teaching_grade != 'no' and order_teaching_subjects == 'no':
-                order_list = models.Table.objects.values( 
-                'order_token',
-                'order_boss_email',
-                'order_teaching_grade',
-                'order_teaching_subjects',
-                'order_hourly_money',
-                'order_teaching_time',
-                'order_total_money',).filter(order_status = PAID,order_teaching_grade = order_teaching_grade)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  智能获取待接的单
+        response_data['is_get'] = 'yes'
+        response_data['order_num'] = len(order_list)
+        response_data['orders'].extend(order_list)
+        
 
-                order_list = list(order_list)
-
-                response_data['is_get'] = 'yes'
-                response_data['order_num'] = len(order_list)
-                response_data['orders'].extend(order_list)
-                return JsonResponse(response_data)
-            else:
-                if order_teaching_grade == 'no' and order_teaching_subjects != 'no':
-                    order_list = models.Table.objects.values( 
-                    'order_token',
-                    'order_boss_email',
-                    'order_teaching_grade',
-                    'order_teaching_subjects',
-                    'order_hourly_money',
-                    'order_teaching_time',
-                    'order_total_money',).filter(order_status = PAID,order_teaching_subjects = order_teaching_subjects)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  智能获取待接的单
-
-                    order_list = list(order_list)
-
-                    response_data['is_get'] = 'yes'
-                    response_data['order_num'] = len(order_list)
-                    response_data['orders'].extend(order_list)
-                    return JsonResponse(response_data)
-
-                else:
-                    if order_teaching_grade != 'no' and order_teaching_subjects != 'no':
-                        order_list = models.Table.objects.values( 
-                        'order_token',
-                        'order_boss_email',
-                        'order_teaching_grade',
-                        'order_teaching_subjects',
-                        'order_hourly_money',
-                        'order_teaching_time',
-                        'order_total_money',).filter(order_status=PAID,
-                        order_teaching_subjects = order_teaching_subjects,
-                        order_teaching_grade = order_teaching_grade)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  智能获取待接的单
-
-                        order_list = list(order_list)
-
-                        response_data['is_get'] = 'yes'
-                        response_data['order_num'] = len(order_list)
-                        response_data['orders'].extend(order_list)
-                        return JsonResponse(response_data)
+        return JsonResponse(response_data)
+       
     else:
         return HttpResponse('bad request',status =500)
 
