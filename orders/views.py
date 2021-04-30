@@ -1558,18 +1558,21 @@ def get_order_to_take(request,order_teaching_grade,order_teaching_subjects):
         if order_teaching_subjects == 'no':
             order_teaching_subjects = ''
 
-        order_list = models.Table.objects.values( 
-        'order_token',
-        'order_boss_email',
-        'order_teaching_grade',
-        'order_teaching_subjects',
-        'order_hourly_money',
-        'order_teaching_time',
-        'order_total_money',
-        'order_boss_require',
-        'order_worker_earnest_money',).filter(order_status=PAID,order_teaching_grade__contains=order_teaching_grade,order_teaching_subjects__contains=order_teaching_subjects)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  模糊匹配
-        
-        order_list = list(order_list)
+        order_list=[]
+        teaching_subjects_list = order_teaching_subjects.split(';')
+
+        for subject in teaching_subjects_list: #获取每一个科目的订单
+            order_listo = models.Table.objects.values( 
+            'order_token',
+            'order_boss_email',
+            'order_teaching_grade',
+            'order_teaching_subjects',
+            'order_hourly_money',
+            'order_teaching_time',
+            'order_total_money',
+            'order_boss_require',
+            'order_worker_earnest_money',).filter(order_status=PAID,order_teaching_grade__contains=order_teaching_grade,order_teaching_subjects__contains=subject)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  模糊匹配
+            order_list.extend(list(order_listo))
 
         response_data['is_get'] = 'yes'
         response_data['order_num'] = len(order_list)
