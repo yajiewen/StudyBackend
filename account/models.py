@@ -16,12 +16,21 @@ class Table(models.Model):
     usr_coin = models.FloatField(default=0) #学币
     usr_credit = models.FloatField(default=0) #信用
     usr_phone_number = models.CharField(max_length=11) #手机号码
+    #用户现在所在省市(这些信息可以更改)
+    usr_now_province = models.CharField(max_length=50,default='')  #用户现在所在省
+    usr_now_city_county = models.CharField(max_length=100,default='') #用户现在所在市县  (过滤主要使用这个字段进行过滤)
 
-    #认证信息
-    usr_real_name =models.CharField(max_length=100)  #用户真是姓名
+    #学籍认证信息
     use_graduation_certificate_no = models.CharField(max_length=50)  #用户毕业证书编号
     use_certificate_verify = models.IntegerField(default=0) #证书是否已经验证 0 未验证 1 已经验证
 
+    #身份认证信息(这些信息不可以更改)
+    usr_real_name =models.CharField(max_length=50,default='')  #用户真实姓名
+    usr_real_age = models.IntegerField(default=0) #用户真实年龄
+    usr_real_clan = models.CharField(max_length=10,default='')  #用户名族
+    usr_real_province = models.CharField(max_length=50,default='')  #用户真实省
+    usr_real_city_county = models.CharField(max_length=100,default='') #用户真实市县  (过滤主要使用这个字段进行过滤)
     #购买赵老师模块
     usr_is_paid_fundteacher = models.IntegerField(default=0) #是否开通找老师模块 0 未开通 1 已经开通
+
 

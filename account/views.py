@@ -360,6 +360,11 @@ def usr_upload_info(request):
         usr_experience = request.POST.get('uexperience')
         #电话号码
         usr_phone_number = request.POST.get('u_phone_number')
+        #所在省
+        usr_now_province = request.POST.get('u_now_province')
+        #坐在市县
+        usr_now_city_county = request.POST.get('u_now_city_county')
+
         response_data = {
             'is_login':'no',
             'is_usrinfo_update':'no'
@@ -376,7 +381,9 @@ def usr_upload_info(request):
                     usr_teaching_grade=usr_teaching_grade,
                     usr_experience=usr_experience,
                     usr_major=usr_major,
-                    usr_phone_number=usr_phone_number)
+                    usr_phone_number=usr_phone_number,
+                    usr_now_province= usr_now_province,
+                    usr_now_city_county= usr_now_city_county,)
                 response_data['is_usrinfo_update'] = 'yes'
             else:  #已经认证过学籍的账号不可以更改学校和专业
                 models.Table.objects.filter(usr_email=usr_email).update(
@@ -387,7 +394,9 @@ def usr_upload_info(request):
                     usr_teaching_grade=usr_teaching_grade,
                     usr_experience=usr_experience,
                     #usr_major=usr_major,
-                    usr_phone_number=usr_phone_number)
+                    usr_phone_number=usr_phone_number,
+                    usr_now_province= usr_now_province,
+                    usr_now_city_county= usr_now_city_county,)
                 response_data['is_usrinfo_update'] = 'yes'
 
             return JsonResponse(response_data)
@@ -456,6 +465,8 @@ def usr_get_info(request):
             response_data['uphone_number'] = tab_obj.usr_phone_number #电话号码
             response_data['is_certificate_verify'] = tab_obj.use_certificate_verify #学历是否验证
             response_data['can_fund_teacher'] = tab_obj.usr_is_paid_fundteacher #是否开通赵老师模块
+            response_data['u_now_city_county'] = tab_obj.usr_now_city_county #现在所在县市
+            response_data['u_now_province'] = tab_obj.usr_now_province #现在所在省
 
             return JsonResponse(response_data)
         else:
