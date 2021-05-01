@@ -404,6 +404,7 @@ def worker_take_over_order(request):
                 return JsonResponse(response_data)
         else:
             if order_worker_email == order_boss_email:
+                response_data['is_login'] = 'yes'
                 response_data['is_self_take'] = 'yes'
             return JsonResponse(response_data)
     else:
@@ -1577,8 +1578,7 @@ def get_order_to_take(request,order_teaching_grade,order_teaching_subjects):
         response_data['is_get'] = 'yes'
         response_data['order_num'] = len(order_list)
         response_data['orders'].extend(order_list)
-        
-
+    
         return JsonResponse(response_data)
        
     else:
