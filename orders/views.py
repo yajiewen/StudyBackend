@@ -1,6 +1,7 @@
 from django.shortcuts import render,HttpResponse
 from django.http import JsonResponse
 from django.core.mail import BadHeaderError,send_mail
+from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from orders import models
@@ -391,7 +392,7 @@ def worker_take_over_order(request):
 
                         try:
                             send_mail(subject, message, from_email, recept_email)
-                        except BadHeaderError:
+                        except (BadHeaderError,SMTPDataError):
                             print('send email falied')
 
                         return JsonResponse(response_data)
@@ -463,7 +464,7 @@ def worker_cancel_order(request):
 
                 try:
                     send_mail(subject, message, from_email, recept_email)
-                except BadHeaderError:
+                except (BadHeaderError,SMTPDataError):
                     print('send email falied')
                 
 
@@ -755,7 +756,7 @@ def boss_refund_order(request):
 
                                 try:
                                     send_mail(subject, message, from_email, recept_email)
-                                except BadHeaderError:
+                                except (BadHeaderError,SMTPDataError):
                                     print('send email falied')
                             else:
                                 return HttpResponse('Illigal refund money')
@@ -783,10 +784,11 @@ def boss_refund_order(request):
                         message = tab_obj.order_worker_email + '你有一笔订单申请退款请前往处理'
                         from_email = 'eudtocher@163.com'
                         recept_email =[tab_obj.order_worker_email]  #接收可以有多个人
+                        print(tab_obj.order_worker_email)
 
                         try:
                             send_mail(subject, message, from_email, recept_email)
-                        except BadHeaderError:
+                        except (BadHeaderError,SMTPDataError):
                             print('send email falied')
                         
                         return JsonResponse(response_data)
@@ -862,7 +864,7 @@ def boss_cancel_refund(request):
 
                 try:
                     send_mail(subject, message, from_email, recept_email)
-                except BadHeaderError:
+                except (BadHeaderError,SMTPDataError):
                     print('send email falied')
                 return JsonResponse(response_data)
             else:
@@ -989,7 +991,7 @@ def worker_agree_refund(request):
 
                 try:
                     send_mail(subject, message, from_email, recept_email)
-                except BadHeaderError:
+                except (BadHeaderError,SMTPDataError):
                     print('send email falied')
 
                 return JsonResponse(response_data)
@@ -1104,7 +1106,7 @@ def worker_ask_complete(request):
 
                 try:
                     send_mail(subject, message, from_email, recept_email)
-                except BadHeaderError:
+                except (BadHeaderError,SMTPDataError):
                     print('send email falied')
 
                 return JsonResponse(response_data)
@@ -1205,7 +1207,7 @@ def boss_agree_complete(request):
                 recept_email =[worker_info.usr_email]  #接收可以有多个人
                 try:
                     send_mail(subject, message, from_email, recept_email)
-                except BadHeaderError:
+                except (BadHeaderError,SMTPDataError):
                     print('send email falied')
 
                 return JsonResponse(response_data)
@@ -1623,7 +1625,7 @@ def send_class_reminder(request):
             try:
                 send_mail(subject, message, from_email, recept_email)
                 response_data['is_send'] = 'yes'
-            except BadHeaderError:
+            except (BadHeaderError,SMTPDataError):
                 print('send email falied')
             
             return JsonResponse(response_data)
