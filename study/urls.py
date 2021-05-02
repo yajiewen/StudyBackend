@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-
+from .test import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include('account.urls')),   #account 应用路由到account中的urls再次路由

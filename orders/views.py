@@ -1471,7 +1471,7 @@ def get_release_order_info(request,usr_email):
 
             try:
                 tab_obj = models.Table.objects.filter(order_boss_email=order_boss_email).order_by('-order_start_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
-                tab_obj1 = models.Table1.objects.filter(order_boss_email=order_boss_email).order_by('-order_start_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj1 = models.Table1.objects.filter(order_boss_email=order_boss_email).order_by('-order_end_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
             except ObjectDoesNotExist:
                 print('ger order error')
             order_info_list = list(tab_obj) #获取订单信息构成的字典列表

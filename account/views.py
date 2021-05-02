@@ -463,10 +463,11 @@ def usr_get_info(request):
             response_data['ucoin'] = tab_obj.usr_coin #学币
             response_data['ucredit'] = tab_obj.usr_credit #信用分
             response_data['uphone_number'] = tab_obj.usr_phone_number #电话号码
-            response_data['is_certificate_verify'] = tab_obj.use_certificate_verify #学历是否验证
             response_data['can_fund_teacher'] = tab_obj.usr_is_paid_fundteacher #是否开通赵老师模块
             response_data['u_now_city_county'] = tab_obj.usr_now_city_county #现在所在县市
             response_data['u_now_province'] = tab_obj.usr_now_province #现在所在省
+            response_data['is_certificate_verify'] = tab_obj.use_certificate_verify #学历是否验证
+            response_data['u_identity_verify'] =tab_obj.usr_identity_verify #是否身份认证
 
             return JsonResponse(response_data)
         else:

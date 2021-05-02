@@ -4,7 +4,7 @@ from django.db import models
 class Table(models.Model):
     usr_email = models.CharField(max_length=100,primary_key=True) #用户名
     usr_password = models.CharField(max_length=200) #登录密码
-    usr_verify = models.IntegerField(default=0) #用户验证  0 未验证 1 验证
+    usr_verify = models.IntegerField(default=0) #用户邮箱验证  0 未验证 1 验证
     usr_name = models.CharField(max_length=200) #昵称
     usr_age = models.IntegerField(default=0) #年龄
     usr_sex = models.CharField(max_length=10) #性别
@@ -30,6 +30,7 @@ class Table(models.Model):
     usr_real_clan = models.CharField(max_length=10,default='')  #用户名族
     usr_real_province = models.CharField(max_length=50,default='')  #用户真实省
     usr_real_city_county = models.CharField(max_length=100,default='') #用户真实市县  (过滤主要使用这个字段进行过滤)
+    usr_identity_verify = models.IntegerField(default=0) #用户身份认证 0未认证 1 已经认证
     #购买赵老师模块
     usr_is_paid_fundteacher = models.IntegerField(default=0) #是否开通找老师模块 0 未开通 1 已经开通
 
