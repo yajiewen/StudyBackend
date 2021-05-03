@@ -42,8 +42,8 @@ def identity_verify(request):
                     os.makedirs(iverify_folder_path)
                     print(iverify_folder_path)
                 #创建文件存储路径
-                img1file_path = os.path.join(iverify_folder_path,prefix+'idenimg1'+img1.name)
-                img2file_path = os.path.join(iverify_folder_path,prefix+'idenimg2'+img2.name)
+                img1file_path = os.path.join(iverify_folder_path,prefix+'idenimg1.'+img1.name.split('.')[-1])  #文件名字格式prefix+idenimg1.后缀
+                img2file_path = os.path.join(iverify_folder_path,prefix+'idenimg2.'+img2.name.split('.')[-1])
 
                 with open(img1file_path,'wb') as imgobj:
                     imgobj.write(img1file)
@@ -103,8 +103,8 @@ def student_verify(request):
                     os.makedirs(sverify_folder_path)
                     print(sverify_folder_path)
                 #创建文件存储路径
-                img1file_path = os.path.join(sverify_folder_path,prefix+'stuimg1'+img1.name)
-                img2file_path = os.path.join(sverify_folder_path,prefix+'stuimg2'+img2.name)
+                img1file_path = os.path.join(sverify_folder_path,prefix+'stuimg1.'+img1.name.split('.')[-1])
+                img2file_path = os.path.join(sverify_folder_path,prefix+'stuimg2.'+img2.name.split('.')[-1])
 
                 with open(img1file_path,'wb') as imgobj:
                     imgobj.write(img1file)
