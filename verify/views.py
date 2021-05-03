@@ -5,6 +5,8 @@ from verify import models
 import os
 # Create your views here.
 
+#配置nginx域名(部署的时候要改)
+nginxurl = 'http://127.0.0.1/'
 """
 ------实名审核功能------
 请求类型post
@@ -41,22 +43,30 @@ def identity_verify(request):
                 if not os.path.exists(iverify_folder_path): #文件夹不存在则创建
                     os.makedirs(iverify_folder_path)
                     print(iverify_folder_path)
+                
+                #设置图片名字
+                img1name = prefix+'idenimg1.'+img1.name.split('.')[-1]
+                img2name = prefix+'idenimg2.'+img2.name.split('.')[-1]
                 #创建文件存储路径
-                img1file_path = os.path.join(iverify_folder_path,prefix+'idenimg1.'+img1.name.split('.')[-1])  #文件名字格式prefix+idenimg1.后缀
-                img2file_path = os.path.join(iverify_folder_path,prefix+'idenimg2.'+img2.name.split('.')[-1])
-
+                img1file_path = os.path.join(iverify_folder_path,img1name)  #文件名字格式prefix+idenimg1.后缀
+                img2file_path = os.path.join(iverify_folder_path,img2name)
+                #写入文件
                 with open(img1file_path,'wb') as imgobj:
                     imgobj.write(img1file)
                 
                 with open(img2file_path,'wb') as imgobj:
                     imgobj.write(img2file)
+
+                #配置imgurl
+                img1url = nginxurl+'Identity/'+img1name
+                img2url = nginxurl+'Identity/'+img2name
                 
                 #未上传则创建认证信息
                 tab_objf = models.Table.objects.filter(usr_email=usr_email)
                 if not tab_objf.exists():#未上传则创建认证信息
-                    models.Table.objects.create(usr_email=usr_email,usr_identity_imgurl1=img1file_path,usr_identity_imgurl2= img2file_path)
+                    models.Table.objects.create(usr_email=usr_email,usr_identity_imgurl1=img1url,usr_identity_imgurl2= img2url)
                 else:
-                    tab_objf.filter(usr_email=usr_email).update(usr_identity_imgurl1=img1file_path,usr_identity_imgurl2= img2file_path)
+                    tab_objf.filter(usr_email=usr_email).update(usr_identity_imgurl1=img1url,usr_identity_imgurl2= img2url)
 
                 response_data['is_upload']= 'yes'
                 return JsonResponse(response_data)
@@ -102,22 +112,29 @@ def student_verify(request):
                 if not os.path.exists(sverify_folder_path): #文件夹不存在则创建
                     os.makedirs(sverify_folder_path)
                     print(sverify_folder_path)
+                #设置图片名字
+                img1name = prefix+'stuimg1.'+img1.name.split('.')[-1]
+                img2name = prefix+'stuimg2.'+img2.name.split('.')[-1]
                 #创建文件存储路径
-                img1file_path = os.path.join(sverify_folder_path,prefix+'stuimg1.'+img1.name.split('.')[-1])
-                img2file_path = os.path.join(sverify_folder_path,prefix+'stuimg2.'+img2.name.split('.')[-1])
-
+                img1file_path = os.path.join(sverify_folder_path,img1name)
+                img2file_path = os.path.join(sverify_folder_path,img2name)
+                #写入文件
                 with open(img1file_path,'wb') as imgobj:
                     imgobj.write(img1file)
                 
                 with open(img2file_path,'wb') as imgobj:
                     imgobj.write(img2file)
+
+                #创建imgurl
+                img1url = nginxurl+'Studentstatus/' + img1name
+                img2url = nginxurl+'Studentstatus/' + img2name
                 
                 #未上传则创建认证信息
                 tab_objf = models.Table.objects.filter(usr_email=usr_email)
                 if not tab_objf.exists():#未上传则创建认证信息
-                    models.Table.objects.create(usr_email=usr_email,usr_student_imgurl1=img1file_path,usr_student_imgurl2= img2file_path)
+                    models.Table.objects.create(usr_email=usr_email,usr_student_imgurl1=img1url,usr_student_imgurl2= img2url)
                 else: #已存在则更新认证信息
-                    tab_objf.filter(usr_email=usr_email).update(usr_student_imgurl1=img1file_path,usr_student_imgurl2= img2file_path)
+                    tab_objf.filter(usr_email=usr_email).update(usr_student_imgurl1=img1url,usr_student_imgurl2= img2url)
 
                 response_data['is_upload']= 'yes'
                 return JsonResponse(response_data)
