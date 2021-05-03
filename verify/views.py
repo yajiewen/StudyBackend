@@ -36,11 +36,14 @@ def identity_verify(request):
         if is_login and usr_email:
             response_data['is_login'] ='yes'
             if amodels.Table.objects.filter(usr_email=usr_email).exists():
-                base_path = os.path.abspath(os.path.dirname(__file__))
-                print(base_path)
+                base_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
+                iverify_folder_path = os.path.join(os.path.join(base_path,'Imgfolder'),'Identity')
+                if not os.path.exists(iverify_folder_path): #文件夹不存在则创建
+                    os.makedirs(iverify_folder_path)
+                    print(iverify_folder_path)
                 #创建文件存储路径
-                img1file_path = os.path.join(base_path,prefix+'idenimg1'+img1.name)
-                img2file_path = os.path.join(base_path,prefix+'idenimg2'+img2.name)
+                img1file_path = os.path.join(iverify_folder_path,prefix+'idenimg1'+img1.name)
+                img2file_path = os.path.join(iverify_folder_path,prefix+'idenimg2'+img2.name)
 
                 with open(img1file_path,'wb') as imgobj:
                     imgobj.write(img1file)
@@ -94,11 +97,14 @@ def student_verify(request):
         if is_login and usr_email:
             response_data['is_login'] ='yes'
             if amodels.Table.objects.filter(usr_email=usr_email).exists():
-                base_path = os.path.abspath(os.path.dirname(__file__))
-                print(base_path)
+                base_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
+                sverify_folder_path = os.path.join(os.path.join(base_path,'Imgfolder'),'Studentstatus')
+                if not os.path.exists(sverify_folder_path): #文件夹不存在则创建
+                    os.makedirs(sverify_folder_path)
+                    print(sverify_folder_path)
                 #创建文件存储路径
-                img1file_path = os.path.join(base_path,prefix+'stuimg1'+img1.name)
-                img2file_path = os.path.join(base_path,prefix+'stuimg2'+img2.name)
+                img1file_path = os.path.join(sverify_folder_path,prefix+'stuimg1'+img1.name)
+                img2file_path = os.path.join(sverify_folder_path,prefix+'stuimg2'+img2.name)
 
                 with open(img1file_path,'wb') as imgobj:
                     imgobj.write(img1file)
