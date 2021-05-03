@@ -5,6 +5,7 @@ from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 from django.core.exceptions import ObjectDoesNotExist
 import json
 from orders import models
+from account import models as amodels
 import time
 import datetime
 from django.utils import timezone
@@ -261,7 +262,6 @@ api:127.0.0.1:8080/orders/payorder/
 """
 #import sys
 #sys.path.append('..')
-from account import models as amodels
 def boss_pay_order(request):
     if request.method == 'POST':
         order_boss_email = request.POST.get('uemail') #获取boss邮箱

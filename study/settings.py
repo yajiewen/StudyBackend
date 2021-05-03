@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'orders',
     'evaluate',
     'classinfo',
+    'verify',
 ]
 
 MIDDLEWARE = [
