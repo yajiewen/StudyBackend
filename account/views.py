@@ -595,7 +595,7 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
                     #开始获取老师信息
                     teacher_info = ''
 
-                    teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED,
+                    teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED, #学籍认证的老师才会出现
                         usr_teaching_subjects__contains = usr_teaching_subjects, #模糊查询执教学科
                         usr_teaching_grade__contains = usr_teaching_grade,      #模糊查询执教年级
                         ).values(
@@ -608,6 +608,8 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
                             'usr_experience',
                             'usr_credit',
                             'usr_phone_number',
+                            'usr_identity_verify',
+                            'use_certificate_verify',
                         )
 
                     teacher_info = list(teacher_info)
@@ -624,6 +626,69 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
             return JsonResponse(response_data)
     else:
         return HttpResponse('Bad request',status = 500)
+
+"""
+------查看员工信息(老师信息)------
+方法:get
+数据:cookies 
+      wemail 员工邮箱 
+api:https://127.0.0.1:8081/account/getteacherinfo/员工邮箱/
+后端返回值:
+{
+    "is_login": "yes",
+    "is_get_info": "yes",
+    "worker_info": {
+        "usr_age": 21,
+        "usr_sex": "男",
+        "usr_school": "青岛大学",
+        "usr_teaching_subjects": "小学:(思想品德 ) ",
+        "usr_teaching_grade": "小学:(三年级 ) ",
+        "usr_experience": "在历史前进的逻辑中前进",
+        "usr_credit": 0.0,
+        "usr_phone_number": "17554251675",
+        "usr_identity_verify": 1,
+        "use_certificate_verify": 1
+    }
+}
+"""
+def usr_get_teacher_info(request,worker_email):
+    if request.method == 'GET':
+        is_login = request.COOKIES.get('is_login')
+        #返回数据
+        response_data={
+            'is_login':'no',
+            'is_get_info':'no',
+            'worker_info':{},
+        }
+
+        if is_login:
+            response_data['is_login'] = 'yes'
+            if models.Table.objects.filter(usr_email=worker_email).exists():
+                #获取信息
+                teacher_info = ''
+                teacher_info = models.Table.objects.filter(usr_email=worker_email
+                    ).values(
+                        'usr_age',
+                        'usr_sex',
+                        'usr_school',
+                        'usr_teaching_subjects',
+                        'usr_teaching_grade',
+                        'usr_experience',
+                        'usr_credit',
+                        'usr_phone_number',
+                        'usr_identity_verify',
+                        'use_certificate_verify',
+                    )
+
+                response_data['worker_info'] = list(teacher_info)[0] 
+                response_data['is_get_info']='yes'
+                return JsonResponse(response_data)
+            else:
+                return JsonResponse(response_data)
+        else:
+            return JsonResponse(response_data)
+    else:
+        return HttpResponse('bad request',status=500)
 
 
 
