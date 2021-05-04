@@ -13,6 +13,7 @@ FUNF_TEACHER_PRICE = 10
 
 
 CERTIFICATE_VERIFIED = 1
+IDENTITY_VERIFIED = 1
 
 """
 ------注册功能------
@@ -467,7 +468,7 @@ def usr_get_info(request):
             response_data['u_now_city_county'] = tab_obj.usr_now_city_county #现在所在县市
             response_data['u_now_province'] = tab_obj.usr_now_province #现在所在省
             response_data['is_certificate_verify'] = tab_obj.use_certificate_verify #学历是否验证
-            response_data['u_identity_verify'] =tab_obj.usr_identity_verify #是否身份认证
+            response_data['is_identity_verify'] =tab_obj.usr_identity_verify #是否身份认证
 
             return JsonResponse(response_data)
         else:
@@ -525,7 +526,7 @@ def usr_buy_fund_teacher(request):
 
 
 """
-------获取已经认证的老师的信息------（购买了找老师功能的用户才可以请求）
+------获取已经认证的老师的信息------（实名认证且购买了找老师功能的用户才可以请求）
 
 前端请求方法：GET
 用户携带的cookie
@@ -536,6 +537,7 @@ api:127.0.0.1:8080/account/getteacherlist/学历/执教学科/执教年级/
 后端返回值: 
 {
     "is_login": "yes",
+    "is_identity_verify": "yes",
     "is_paid_fund_teacher_fuc": "yes",
     "teacher_num": 1,
     "teacherinfo": [
@@ -561,6 +563,7 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
 
         response_data ={
             'is_login':'no',
+            'is_identity_verify':'no',
             'is_paid_fund_teacher_fuc':'no',
             'teacher_num':0,
             'teacherinfo':[],
@@ -571,35 +574,39 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
         if usr_teaching_grade == 'no':
             usr_teaching_grade = ''
 
-        #查看用户有没有开通找老师功能
+        #查看用户有没有开通找老师功能和实名认证
         if is_login and usr_email:
             response_data['is_login'] = 'yes'
-            if models.Table.objects.filter(usr_email = usr_email,usr_is_paid_fundteacher = FUND_TEACHER_PAID).exists() :
-                response_data['is_paid_fund_teacher_fuc'] = 'yes'
-                #开始获取老师信息
-                teacher_info = ''
+            if models.Table.objects.filter(usr_email=usr_email,usr_identity_verify = IDENTITY_VERIFIED).exists():
+                response_data['is_identity_verify'] = 'yes'
+                if models.Table.objects.filter(usr_email = usr_email,usr_is_paid_fundteacher = FUND_TEACHER_PAID).exists() :
+                    response_data['is_paid_fund_teacher_fuc'] = 'yes'
+                    #开始获取老师信息
+                    teacher_info = ''
 
-                teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED,
-                    usr_teaching_subjects__contains = usr_teaching_subjects, #模糊查询执教学科
-                    usr_teaching_grade__contains = usr_teaching_grade,      #模糊查询执教年级
-                    ).values(
-                        'usr_email',
-                        'usr_age',
-                        'usr_sex',
-                        'usr_school',
-                        'usr_teaching_subjects',
-                        'usr_teaching_grade',
-                        'usr_experience',
-                        'usr_credit',
-                        'usr_phone_number',
-                    )
+                    teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED,
+                        usr_teaching_subjects__contains = usr_teaching_subjects, #模糊查询执教学科
+                        usr_teaching_grade__contains = usr_teaching_grade,      #模糊查询执教年级
+                        ).values(
+                            'usr_email',
+                            'usr_age',
+                            'usr_sex',
+                            'usr_school',
+                            'usr_teaching_subjects',
+                            'usr_teaching_grade',
+                            'usr_experience',
+                            'usr_credit',
+                            'usr_phone_number',
+                        )
 
-                teacher_info = list(teacher_info)
-                response_data['teacher_num'] = len(teacher_info)
-                response_data['teacherinfo'].extend(teacher_info)
+                    teacher_info = list(teacher_info)
+                    response_data['teacher_num'] = len(teacher_info)
+                    response_data['teacherinfo'].extend(teacher_info)
 
-                return JsonResponse(response_data)
+                    return JsonResponse(response_data)
 
+                else:
+                    return JsonResponse(response_data)
             else:
                 return JsonResponse(response_data)
         else:
