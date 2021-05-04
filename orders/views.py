@@ -451,7 +451,8 @@ def worker_cancel_order(request):
                 #更新订单信息
                 models.Table.objects.filter(order_token=order_token,order_worker_email=order_worker_email,order_status=TAKEOVER).update(
                     order_status=PAID,
-                    order_worker_email=''
+                    order_worker_email='',
+                    order_worker_name='',
                 )
                 response_data['is_order_cancel'] = 'yes'
                 response_data['order_status'] = PAID
@@ -479,7 +480,7 @@ def worker_cancel_order(request):
 
 
 """
-------用户(boss)取消发单()------
+------用户(boss)取消发单(状态为未付款或者付款的单)------
 ------判断方法是不是post，不是返回相应信息，是则进行状态信息判断，若用户状态为未登录返回相应信息，若已登录则比对cookie中的email和
 ------前端提交的email 账号，相同则进行取消订单操作，不相同返回相应信息；取消订单操作先看该订单是否存在，不存在返回相应信息，存在则
 ------看订单状态，订单状态为0，则修改订单状态为6后向order_table2中添加这条订单信息同时删除其在order_table中的相应条目，若订单状态为1，
@@ -698,75 +699,71 @@ def boss_refund_order(request):
 
                     #两个时间相减看是不是超过了一小时,未超时直接退款
                     if (time_now - order_accept_time).seconds <= 3600:
-                        if tab_obj.order_status == TAKEOVER:
-                            #把该订单放入order_table1  26 项 有意向earnest monry不用写
-                            models.Table1.objects.create(
-                                order_token = tab_obj.order_token,
-                                order_boss_email = tab_obj.order_boss_email,
-                                order_worker_email = tab_obj.order_worker_email,
-                                order_start_time = tab_obj.order_start_time,
-                                order_accept_time = tab_obj.order_accept_time,
-                                order_complet_time = tab_obj.order_complet_time,
-                                order_end_time = tab_obj.order_end_time,
-                                order_status =CANCELD,#-----------
-                                order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
-                                order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
-                                order_is_boss_ask_refund = BOSS_ASK_REFUND,#----------------
-                                order_refund_reason = order_refund_reason, #----------------
-                                order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund,
-                                order_refund_money = order_refund_money,#-----------------
-                                order_teaching_grade = tab_obj.order_teaching_grade,
-                                order_teaching_subjects = tab_obj.order_teaching_subjects,
-                                order_hourly_money = tab_obj.order_hourly_money,
-                                order_teaching_time = tab_obj.order_teaching_time,
-                                order_total_money = tab_obj.order_total_money,
-                                order_boss_name = tab_obj.order_boss_name,
-                                order_boss_phone_number = tab_obj.order_boss_phone_number,
-                                order_boss_qq_wei = tab_obj.order_boss_qq_wei,
-                                order_boss_require = tab_obj.order_boss_require,
-                                order_worker_name = tab_obj.order_worker_name,
-                                order_worker_phone_number = tab_obj.order_worker_phone_number,
-                                order_worker_qq_wei = tab_obj.order_worker_qq_wei,
-                                order_is_evalute= tab_obj.order_is_evalute
-                            )
-                            #删除order_table中的原订单
-                            models.Table.objects.filter(order_token=order_token,order_boss_email=order_boss_email).delete()
-                            response_data['order_status'] = CANCELD
-
+                        #退回coin
+                        print(order_refund_money)
+                        boss_coin = amodels.Table.objects.get(usr_email=order_boss_email).usr_coin #获取老板当前coin
+                        worker_coin = amodels.Table.objects.get(usr_email=tab_obj.order_worker_email).usr_coin #获取员工coin
+                        #校验退款金额
+                        if order_refund_money <= tab_obj.order_total_money and order_refund_money >= 0:
                             #退回老板coin
-                            boss_coin = amodels.Table.objects.get(usr_email=order_boss_email).usr_coin #获取老板当前coin
-                            #校验退款金额
-                            if order_refund_money <= tab_obj.order_total_money and order_refund_money >= 0:
-                                boss_coin = boss_coin + order_refund_money
-                                amodels.Table.objects.filter(usr_email=order_boss_email).update(usr_coin=boss_coin) #更老板coin
-                            else:
-                                return HttpResponse('Illigal refund money')
-
+                            boss_coin = boss_coin + order_refund_money
+                            amodels.Table.objects.filter(usr_email=order_boss_email).update(usr_coin=boss_coin) #更老板coin
                             #退回员工coin
-                            worker_coin = amodels.Table.objects.get(usr_email=tab_obj.order_worker_email).usr_coin #获取员工coin
-                            #校验退款金额
-                            if order_refund_money <= tab_obj.order_total_money and order_refund_money >= 0:
-                                worker_coin = worker_coin + (tab_obj.order_total_money - order_refund_money) + tab_obj.order_worker_earnest_money#得到退回老板后剩余的coin，包括保证金
-                                amodels.Table.objects.filter(usr_email=tab_obj.order_worker_email).update(usr_coin=worker_coin) #更老板coin
-                                #给老师发送提醒邮件
-                                subject = 'Edu 订单申请退款'
-                                message = tab_obj.order_worker_email + '你有一笔订单已被取消，'+'退回对方金额:'+str(order_refund_money)+'你得到报酬:'+str(tab_obj.order_total_money - order_refund_money)+'保证金:'+str(tab_obj.order_worker_earnest_money)
-                                from_email = 'eudtocher@163.com'
-                                recept_email =[tab_obj.order_worker_email]  #接收可以有多个人
-
-                                try:
-                                    send_mail(subject, message, from_email, recept_email)
-                                except (BadHeaderError,SMTPDataError):
-                                    print('send email falied')
-                            else:
-                                return HttpResponse('Illigal refund money')
-
-                            response_data['coin_refund'] = order_refund_money
-                            response_data['is_order_refund'] = 'yes'
-
-                            return JsonResponse(response_data)
+                            worker_coin = worker_coin + (tab_obj.order_total_money - order_refund_money) + tab_obj.order_worker_earnest_money#得到退回老板后剩余的coin，包括保证金
+                            amodels.Table.objects.filter(usr_email=tab_obj.order_worker_email).update(usr_coin=worker_coin) #更员工coin
                         else:
-                            return JsonResponse(response_data)        
+                            return HttpResponse('Illigal refund money')
+                        
+                        #给老师发送提醒邮件
+                        subject = 'Edu 订单申请退款'
+                        message = tab_obj.order_worker_email + '你有一笔订单已被取消，'+'退回对方金额:'+str(order_refund_money)+'你得到报酬:'+str(tab_obj.order_total_money - order_refund_money)+'保证金:'+str(tab_obj.order_worker_earnest_money)
+                        from_email = 'eudtocher@163.com'
+                        recept_email =[tab_obj.order_worker_email]  #接收可以有多个人
+
+                        try:
+                            send_mail(subject, message, from_email, recept_email)
+                        except (BadHeaderError,SMTPDataError):
+                            print('send email falied')
+
+                        #把该订单放入order_table1  26 项 有1项earnest monry不用写
+                        models.Table1.objects.create(
+                            order_token = tab_obj.order_token,
+                            order_boss_email = tab_obj.order_boss_email,
+                            order_worker_email = tab_obj.order_worker_email,
+                            order_start_time = tab_obj.order_start_time,
+                            order_accept_time = tab_obj.order_accept_time,
+                            order_complet_time = tab_obj.order_complet_time,
+                            order_end_time = tab_obj.order_end_time,
+                            order_status =CANCELD,#-----------
+                            order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
+                            order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
+                            order_is_boss_ask_refund = BOSS_ASK_REFUND,#----------------
+                            order_refund_reason = order_refund_reason, #----------------
+                            order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund,
+                            order_refund_money = order_refund_money,#-----------------
+                            order_teaching_grade = tab_obj.order_teaching_grade,
+                            order_teaching_subjects = tab_obj.order_teaching_subjects,
+                            order_hourly_money = tab_obj.order_hourly_money,
+                            order_teaching_time = tab_obj.order_teaching_time,
+                            order_total_money = tab_obj.order_total_money,
+                            order_boss_name = tab_obj.order_boss_name,
+                            order_boss_phone_number = tab_obj.order_boss_phone_number,
+                            order_boss_qq_wei = tab_obj.order_boss_qq_wei,
+                            order_boss_require = tab_obj.order_boss_require,
+                            order_worker_name = tab_obj.order_worker_name,
+                            order_worker_phone_number = tab_obj.order_worker_phone_number,
+                            order_worker_qq_wei = tab_obj.order_worker_qq_wei,
+                            order_is_evalute= tab_obj.order_is_evalute
+                        )
+                        #删除order_table中的原订单
+                        models.Table.objects.filter(order_token=order_token,order_boss_email=order_boss_email).delete()
+                        response_data['order_status'] = CANCELD
+
+                        response_data['coin_refund'] = order_refund_money
+                        response_data['is_order_refund'] = 'yes'
+
+                        return JsonResponse(response_data)
+     
                     else: #超时则修改订单状态，给老师发邮件提醒有退款申请
                         response_data['is_time_out'] = 'yes'
                         response_data['order_status'] = NEGOTIATE_REFUND
