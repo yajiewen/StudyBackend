@@ -671,6 +671,7 @@ def usr_get_teacher_info(request,worker_email):
                         'usr_age',
                         'usr_sex',
                         'usr_school',
+                        'usr_major',
                         'usr_teaching_subjects',
                         'usr_teaching_grade',
                         'usr_experience',
