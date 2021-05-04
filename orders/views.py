@@ -734,7 +734,7 @@ def boss_refund_order(request):
                             order_accept_time = tab_obj.order_accept_time,
                             order_complet_time = tab_obj.order_complet_time,
                             order_end_time = tab_obj.order_end_time,
-                            order_status =CANCELD,#-----------
+                            order_status =REFUND_SUCCESS,#-----------
                             order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
                             order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
                             order_is_boss_ask_refund = BOSS_ASK_REFUND,#----------------
