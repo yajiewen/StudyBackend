@@ -9,7 +9,8 @@ from threading import Thread
 # Create your views here.
 ###########################找老师价格#################
 FUND_TEACHER_PAID = 1
-FUNF_TEACHER_PRICE = 10 
+FUND_TEACHER_NOT_PAID = 0
+FUNF_TEACHER_PRICE = 10 #购买找老师价格
 
 
 CERTIFICATE_VERIFIED = 1
@@ -477,17 +478,23 @@ def usr_get_info(request):
         return HttpResponse('Bad request',status= 500)
 
 """
-------用后购买找老师模块------（购买过的不可以再次购买）
+------用后购买找老师模块------（购买过的不可以再次购买,且实名认证过才能买）
 ------首先判断是不是post请求，是post请求则判断用户是否已经购买过找老师功能，没购买则 购买扣钱且跟新用户购买信息，返回相应信息
 ------已购买则返回相应信息
 前端请求方法：POST
 用户携带的cookie
 数据类型：
 
-api:127.0.0.1:8080/account/buyteacherfunc/
+https://127.0.0.1:8081/account/buyteacherfunc/
 后端返回值: 
 {
+    "paid_success": "no",
+    "is_identity_verify": "no",
+    "is_lack_money": "no"
+}
+{
     "paid_success": "yes",
+    "is_identity_verify": "yes",
     "is_lack_money": "no"
 }
 """
@@ -499,6 +506,7 @@ def usr_buy_fund_teacher(request):
 
         response_data ={
             'paid_success':'no',
+            'is_identity_verify':'no',
             'is_lack_money':'no',
         }
         #获取用户信息
@@ -507,20 +515,23 @@ def usr_buy_fund_teacher(request):
             usr_info = models.Table.objects.get(usr_email= usr_email)
         except ObjectDoesNotExist:
             print('usr_info get error')
-        if usr_info.usr_is_paid_fundteacher == 0: #没购买过才能买
-            if usr_info.usr_coin >= FUNF_TEACHER_PRICE:
-                usr_coin = usr_info.usr_coin - FUNF_TEACHER_PRICE
-                models.Table.objects.filter(usr_email= usr_email).update(usr_coin = usr_coin,usr_is_paid_fundteacher=FUND_TEACHER_PAID)
+        if usr_info.usr_identity_verify == IDENTITY_VERIFIED:  #要实名认证后的才能买
+            response_data['is_identity_verify'] = 'yes'
+            if usr_info.usr_is_paid_fundteacher == FUND_TEACHER_NOT_PAID: #没购买过才能买
+                if usr_info.usr_coin >= FUNF_TEACHER_PRICE:
+                    usr_coin = usr_info.usr_coin - FUNF_TEACHER_PRICE
+                    models.Table.objects.filter(usr_email= usr_email).update(usr_coin = usr_coin,usr_is_paid_fundteacher=FUND_TEACHER_PAID)
 
-                response_data['paid_success'] = 'yes'
-                response_data['is_lack_money'] = 'no'
-                return JsonResponse(response_data)
+                    response_data['paid_success'] = 'yes'
+                    response_data['is_lack_money'] = 'no'
+                    return JsonResponse(response_data)
+                else:
+                    response_data['is_lack_money'] = 'yes'
+                    return JsonResponse(response_data)
             else:
-                response_data['is_lack_money'] = 'yes'
                 return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
-
     else:
         return HttpResponse('bad request',status =500)
 
