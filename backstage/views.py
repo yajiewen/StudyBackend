@@ -147,7 +147,18 @@ def admin_del_account(request):
     cookies
 api:https://127.0.0.1:8081/backstage/ilist/
 后端返回:
-
+{
+    "is_login": "yes",
+    "is_get": "yes",
+    "identity_num": 1,
+    "identity_list": [
+        {
+            "usr_email": "1193184604@qq.com",
+            "usr_identity_imgurl1": "http://127.0.0.1/Identity/1193184604idenimg1.jpg",
+            "usr_identity_imgurl2": "http://127.0.0.1/Identity/1193184604idenimg2.jpg"
+        }
+    ]
+}
 """
 def admin_get_identity_list(request):
     if request.method == 'GET':
@@ -173,6 +184,56 @@ def admin_get_identity_list(request):
             response_data['is_get'] = 'yes'
             response_data['identity_list'].extend(identi_info_list)
             response_data['identity_num'] = len(identi_info_list)
+            return JsonResponse(response_data)
+        else:
+            return JsonResponse(response_data)
+    else:
+        return HttpResponse('bad request',status = 500)
+
+"""
+------获取学籍验证条目信息------
+方法:get
+参数:
+    cookies
+api:https://127.0.0.1:8081/backstage/slist/
+后端返回:
+{
+    "is_login": "yes",
+    "is_get": "yes",
+    "student_num": 1,
+    "student_list": [
+        {
+            "usr_email": "1193184604@qq.com",
+            "usr_student_imgurl1": "http://127.0.0.1/Studentstatus/1193184604stuimg1.jpg",
+            "usr_student_imgurl2": "http://127.0.0.1/Studentstatus/1193184604stuimg2.jpg"
+        }
+    ]
+}
+"""
+def admin_get_student_list(request):
+    if request.method == 'GET':
+        #获取管理员账号和登录状态
+        response_data ={
+            'is_login':'no',
+            'is_get':'no',
+            'student_num':0,
+            'student_list':[],
+        }
+
+        usr_account = request.COOKIES.get('account')
+        is_admin_login = request.COOKIES.get('is_admin_login')
+        if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
+            response_data['is_login'] = 'yes'
+            #获取需要审核的条目信息
+            identi_info_list = vmodels.Table.objects.filter(usr_student_status = apply_review).values(
+                'usr_email',
+                'usr_student_imgurl1',
+                'usr_student_imgurl2',
+            )
+            identi_info_list = list(identi_info_list)
+            response_data['is_get'] = 'yes'
+            response_data['student_list'].extend(identi_info_list)
+            response_data['student_num'] = len(identi_info_list)
             return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
