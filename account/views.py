@@ -2,6 +2,7 @@ from django.shortcuts import render,HttpResponse
 from django.http import JsonResponse
 from django.core.mail import BadHeaderError,send_mail
 from django.core.exceptions import ObjectDoesNotExist
+from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 #from django.core.exceptions import ObjectDoesNotExist,  #导入查找异常
 import json
 from account import models
@@ -67,7 +68,7 @@ def usr_add(request): #创建账号
             try:
                 send_mail(subject,message,from_email,recept_email) #发送邮件
                 response_data['is_send_verify'] = 'yes'
-            except BadHeaderError:
+            except (BadHeaderError,SMTPDataError):
                 print('邮件发送失败')
 
             return JsonResponse(response_data)
@@ -192,7 +193,7 @@ def usr_send_verify_email(request):
                 response_data['uemail_exist'] = 'yes'
                 return JsonResponse(response_data)
 
-            except BadHeaderError:
+            except (BadHeaderError,SMTPDataError):
                 return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)  #邮件名在数据库不存在则返回相应数据
@@ -310,7 +311,7 @@ def usr_find_password(request):
                 send_mail(subject,message,from_email,recept_email) #发送邮件
                 response_data['is_send_password'] = 'yes'
                 
-            except BadHeaderError:
+            except (BadHeaderError,SMTPDataError):
                 print('send password error')
 
             return JsonResponse(response_data) #返回响应
