@@ -2,6 +2,7 @@ from django.shortcuts import render,HttpResponse
 from django.http import JsonResponse
 from backstage import models
 from account import models as amodels
+from verify import models as vmodels
 import json
 import datetime
 
@@ -135,5 +136,33 @@ def admin_del_account(request):
         else:
             return JsonResponse(response_data)
 
+    else:
+        return HttpResponse('bad request',status = 500)
+
+"""
+------获取身份验证条目信息------
+方法:get
+参数:
+    cookies
+后端返回:
+
+"""
+def admin_get_identity_list(request):
+    if request.method == 'GET':
+        #获取管理员账号和登录状态
+        response_data ={
+            'is_login':'no',
+            'is_get':'no',
+            'identity_num':0,
+            'identity_list':[],
+        }
+
+        usr_account = request.COOKIES.get('account')
+        is_admin_login = request.COOKIES.get('is_admin_login')
+        if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
+            response_data['is_login'] = 'yes'
+
+        else:
+            return JsonResponse(response_data)
     else:
         return HttpResponse('bad request',status = 500)
