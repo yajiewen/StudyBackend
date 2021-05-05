@@ -143,7 +143,7 @@ def admin_del_account(request):
                     response_data['is_delet'] = 'yes'   
             except ObjectDoesNotExist:
                 print('get account failed')
-                
+
             return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
@@ -242,8 +242,14 @@ def admin_get_student_list(request):
                 'usr_student_imgurl2',
             )
             identi_info_list = list(identi_info_list)
+            #加入学校和专业信息
+            for student in identi_info_list:
+                tab_obj = amodels.Table.objects.get(usr_email=student['usr_email'])
+                student['school'] = tab_obj.usr_school
+                student['major'] = tab_obj.usr_major
+                response_data['student_list'].append(student)
+                
             response_data['is_get'] = 'yes'
-            response_data['student_list'].extend(identi_info_list)
             response_data['student_num'] = len(identi_info_list)
             return JsonResponse(response_data)
         else:
