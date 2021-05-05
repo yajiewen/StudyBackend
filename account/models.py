@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
 class Table(models.Model):
     usr_email = models.CharField(max_length=100,primary_key=True) #用户名
@@ -33,5 +33,7 @@ class Table(models.Model):
     usr_identity_verify = models.IntegerField(default=0) #用户身份认证 0未认证 1 已经认证
     #购买赵老师模块
     usr_is_paid_fundteacher = models.IntegerField(default=0) #是否开通找老师模块 0 未开通 1 已经开通
+    #账号创建时间
+    usr_account_add_time = models.DateTimeField(auto_now_add=True) # auto_now_add 设置为创建时间，之后修改对象时不再更新
 
 

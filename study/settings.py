@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'evaluate',
     'classinfo',
     'verify',
+    'backstage',
 ]
 
 MIDDLEWARE = [

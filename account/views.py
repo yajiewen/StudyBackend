@@ -106,9 +106,9 @@ def usr_login(request): #登录功能
             return JsonResponse(response_data)
         if models.Table.objects.filter(usr_email=usr_email,usr_password=usr_password).exists():
             response_data['is_login']='yes'
-            response_data = HttpResponse(json.dumps(response_data))
+            response_data = HttpResponse(json.dumps(response_data)) #必须要json.dumps 否则前端收不到键的值
             response_data.set_cookie('uemail',usr_email, secure=True) #设置usr_email COOKIE
-            response_data.set_cookie('is_login',True,max_age=3600*3, secure=True) #设置是否登录的 COOKIE
+            response_data.set_cookie('is_login',True,max_age=3600*6, secure=True) #设置是否登录的 COOKIE
 
             ##设置cookie samesite属性值为 none 避免跨域找不到cookie
             response_data.cookies['uemail']['samesite'] = 'none'

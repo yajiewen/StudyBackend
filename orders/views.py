@@ -349,7 +349,7 @@ def worker_take_over_order(request):
             'is_lack_eranest_money':'no',
             'is_self_take':'no',
         }
-        if is_login and order_worker_email != order_boss_email: #不可以字节接自己的单
+        if is_login and order_worker_email != order_boss_email: #不可以接自己的单
             response_data['is_login'] = 'yes'
             if models.Table.objects.filter(order_token=order_token,order_boss_email=order_boss_email,order_status=PAID).exists(): #接单必须是已经发布的单
                 #更新订单信息
@@ -698,7 +698,7 @@ def boss_refund_order(request):
                     time_now = datetime.datetime.now()
 
                     #两个时间相减看是不是超过了一小时,未超时直接退款
-                    if (time_now - order_accept_time).seconds <= 3600:
+                    if (time_now - order_accept_time).total_seconds() <= 3600: #.seconds 只计算小时分钟秒 部分之间的时间差 要使用total_seconds()
                         #退回coin
                         print(order_refund_money)
                         boss_coin = amodels.Table.objects.get(usr_email=order_boss_email).usr_coin #获取老板当前coin
