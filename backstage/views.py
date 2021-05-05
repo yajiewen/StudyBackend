@@ -6,7 +6,8 @@ from verify import models as vmodels
 import json
 import datetime
 
-NOT_VERIFY = 0
+NOT_VERIFY = 0 #邮箱未验证
+apply_review =0 #申请审核
 # Create your views here.
 """
 ------管理员登录------
@@ -144,6 +145,7 @@ def admin_del_account(request):
 方法:get
 参数:
     cookies
+api:https://127.0.0.1:8081/backstage/ilist/
 后端返回:
 
 """
@@ -161,7 +163,17 @@ def admin_get_identity_list(request):
         is_admin_login = request.COOKIES.get('is_admin_login')
         if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
             response_data['is_login'] = 'yes'
-
+            #获取需要审核的条目信息
+            identi_info_list = vmodels.Table.objects.filter(usr_identity_status = apply_review).values(
+                'usr_email',
+                'usr_identity_imgurl1',
+                'usr_identity_imgurl2',
+            )
+            identi_info_list = list(identi_info_list)
+            response_data['is_get'] = 'yes'
+            response_data['identity_list'].extend(identi_info_list)
+            response_data['identity_num'] = len(identi_info_list)
+            return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
     else:
