@@ -53,7 +53,7 @@ def admin_login(request):
 api:https://127.0.0.1:8081/backstage/badaccountlist/
 后端返回值: 
 {
-    "is_login": "no",
+    "is_login": "yes",
     "bad_account_list": [
         {
             "usr_email": "973178360@qq.com",
@@ -77,6 +77,7 @@ def admin_get_bad_accounts(request):
         usr_account = request.COOKIES.get('account')
         is_admin_login = request.COOKIES.get('is_admin_login')
         if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
+            response_data['is_login'] = 'yes'
             account_list = amodels.Table.objects.filter(usr_verify= NOT_VERIFY).values('usr_email','usr_account_add_time','usr_verify')
             account_list = list(account_list) 
             #把未验证时间超过24小时的加入bad account list
@@ -92,5 +93,47 @@ def admin_get_bad_accounts(request):
             return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
+    else:
+        return HttpResponse('bad request',status = 500)
+
+"""
+------后台管理员删除垃圾账号------
+方法:post
+参数
+    cookies
+    uemail 垃圾账号邮箱
+api:https://127.0.0.1:8081/backstage/deljunkmail/
+后端返回值:
+{
+    "is_login": "yes",
+    "is_delet": "yes"
+}
+
+"""
+def admin_del_account(request):
+    if request.method == 'POST':
+        #获取管理员账号和登录状态
+        response_data ={
+            'is_login':'no',
+            'is_delet':'no',
+        }
+
+        usr_account = request.COOKIES.get('account')
+        is_admin_login = request.COOKIES.get('is_admin_login')
+        usr_email = request.POST.get('uemail')
+        if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
+            response_data['is_login'] = 'yes'
+            #判断删除的账号是不是垃圾账号
+            tab_obj = amodels.Table.objects.get(usr_email= usr_email,usr_verify= NOT_VERIFY)
+            time_now = datetime.datetime.now()
+            if (time_now - tab_obj.usr_account_add_time).total_seconds() >24 * 3600:
+                print('shi la ji zhang hao ')
+                #开始删除垃圾账号
+                tab_obj.delete()
+                response_data['is_delet'] = 'yes'   
+            return JsonResponse(response_data)
+        else:
+            return JsonResponse(response_data)
+
     else:
         return HttpResponse('bad request',status = 500)
