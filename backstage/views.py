@@ -133,13 +133,17 @@ def admin_del_account(request):
         if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
             response_data['is_login'] = 'yes'
             #判断删除的账号是不是垃圾账号
-            tab_obj = amodels.Table.objects.get(usr_email= usr_email,usr_verify= NOT_VERIFY)
-            time_now = datetime.datetime.now()
-            if (time_now - tab_obj.usr_account_add_time).total_seconds() >24 * 3600:
-                print('shi la ji zhang hao ')
-                #开始删除垃圾账号
-                tab_obj.delete()
-                response_data['is_delet'] = 'yes'   
+            try:
+                tab_obj = amodels.Table.objects.get(usr_email= usr_email,usr_verify= NOT_VERIFY)
+                time_now = datetime.datetime.now()
+                if (time_now - tab_obj.usr_account_add_time).total_seconds() >24 * 3600:
+                    print('shi la ji zhang hao ')
+                    #开始删除垃圾账号
+                    tab_obj.delete()
+                    response_data['is_delet'] = 'yes'   
+            except ObjectDoesNotExist:
+                print('get account failed')
+                
             return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
