@@ -61,7 +61,7 @@ def usr_add(request): #创建账号
             response_data['is_add']='yes'
             #发送验证邮件
             subject = 'Edu account verify'
-            message = 'https://127.0.0.1:8080/account/emailverify/'+usr_email+'/'
+            message = '尊敬的用户\n  您正在申请红树林家教账号\n请点击链接进行邮箱验证'+'https://124.70.87.28:8000/account/emailverify/'+usr_email+'/'
             from_email = 'eudtocher@163.com'
             recept_email =[usr_email]  #接收可以有多个人
             
@@ -182,10 +182,10 @@ def usr_send_verify_email(request):
         }
 
         subject = 'Edu account verify'
-        message = 'https://127.0.0.1:8080/account/emailverify/'+usr_email+'/'
+        message = 'https://124.70.87.28:8000/account/emailverify/'+usr_email+'/'
         from_email = 'eudtocher@163.com'
         recept_email =[usr_email]  #接收可以有多个人
-        #如果接收邮件不空且在数据库中已经添加了该邮件账号则发送验证邮件,且邮件为验证
+        #如果接收邮件不空且在数据库中已经添加了该邮件账号则发送验证邮件,且邮件未验证
         if usr_email and models.Table.objects.filter(usr_email=usr_email,usr_verify =0 ).exists():
             try:
                 send_mail(subject,message,from_email,recept_email) #发送邮件
@@ -220,7 +220,7 @@ def usr_email_verify(request,usr_email):
             response_data = usr_email+" is verified , Please don't repeat the verification"
         else:
             models.Table.objects.filter(usr_email=usr_email).update(usr_verify=1) #若没有激活则激活
-            response_data = usr_email+'is verified now!'
+            response_data = usr_email+'邮箱验证成功,可以前往登录\n!'
         return HttpResponse(response_data)
     else:
         return HttpResponse('unknow request',status=500)  #用户名不存在返回unknow request
@@ -301,8 +301,8 @@ def usr_find_password(request):
                 print('get usr_info error')
             usr_password = usr_info.usr_password
             #向用户发送邮件
-            subject = 'Eud find password your EDU password'
-            message = 'Your password : '+usr_password
+            subject = 'Eud find password'
+            message = '您的密码为 : '+usr_password+'\n 为了安全,请立即修改密码.'
             from_email = 'eudtocher@163.com'
             recept_email = [usr_email]
 
