@@ -6,8 +6,8 @@ import os
 # Create your views here.
 
 #配置nginx域名(部署的时候要改)
-nginxurl = 'http://124.70.87.28/'
-#nginxurl = 'http://127.0.0.1/'
+#nginxurl = 'http://124.70.87.28/'
+nginxurl = 'http://127.0.0.1/'
 apply_review = 0
 """
 ------实名审核功能------
@@ -32,7 +32,6 @@ def identity_verify(request):
 
         img1file = img1.read()
         img2file = img2.read()
-
         response_data = {
             'is_login':'no',
             'is_upload':'no'
