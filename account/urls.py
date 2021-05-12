@@ -12,7 +12,7 @@ urlpatterns = [
     path('upusrinfo/',usr_upload_info), #上传更新用户信息8
     path('getusrinfo/',usr_get_info), #获取用户信息9
     path('buyteacherfunc/',usr_buy_fund_teacher), #购买找老师模块 10 
-    path('getteacherlist/<str:usr_teaching_subjects>/<str:usr_teaching_grade>/',usr_get_teacher_list), #获取老师信息列表 11
+    path('getteacherlist/<str:usr_teaching_subjects>/<str:usr_teaching_grade>/<str:usr_now_city_county>/',usr_get_teacher_list), #获取老师信息列表 11
     path('getteacherinfo/<str:worker_email>/',usr_get_teacher_info), #获取老师信息
     path('usrtest/',usr_test),  #cookie samesite 问题解决测试 
 ]

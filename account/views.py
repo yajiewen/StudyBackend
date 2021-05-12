@@ -568,7 +568,7 @@ api:127.0.0.1:8080/account/getteacherlist/学历/执教学科/执教年级/
     ]
 }
 """
-def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
+def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade,usr_now_city_county):
     if request.method == 'GET':
         is_login = request.COOKIES.get('is_login')
         usr_email = request.COOKIES.get('uemail')
@@ -585,6 +585,8 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
             usr_teaching_subjects = ''
         if usr_teaching_grade == 'no':
             usr_teaching_grade = ''
+        if usr_now_city_county == 'no':
+            usr_now_city_county = ''
 
         #查看用户有没有开通找老师功能和实名认证
         if is_login and usr_email:
@@ -594,28 +596,32 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade):
                 if models.Table.objects.filter(usr_email = usr_email,usr_is_paid_fundteacher = FUND_TEACHER_PAID).exists() :
                     response_data['is_paid_fund_teacher_fuc'] = 'yes'
                     #开始获取老师信息
-                    teacher_info = ''
+                    teacher_info_list = []
 
-                    teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED, #学籍认证的老师才会出现
-                        usr_teaching_subjects__contains = usr_teaching_subjects, #模糊查询执教学科
-                        usr_teaching_grade__contains = usr_teaching_grade,      #模糊查询执教年级
-                        ).values(
-                            'usr_email',
-                            'usr_age',
-                            'usr_sex',
-                            'usr_school',
-                            'usr_teaching_subjects',
-                            'usr_teaching_grade',
-                            'usr_experience',
-                            'usr_credit',
-                            'usr_phone_number',
-                            'usr_identity_verify',
-                            'use_certificate_verify',
-                        )
+                    teaching_subjects_list = usr_teaching_subjects.split(';')
+                    for subjects in teaching_subjects_list: #查询每一个学科
 
-                    teacher_info = list(teacher_info)
-                    response_data['teacher_num'] = len(teacher_info)
-                    response_data['teacherinfo'].extend(teacher_info)
+                        teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED, #学籍认证的老师才会出现
+                            usr_teaching_subjects__contains = subjects, #模糊查询执教学科
+                            usr_teaching_grade__contains = usr_teaching_grade, #模糊查询执教年级
+                            usr_now_city_county__contains= usr_now_city_county, #模糊查询所在地     
+                            ).values(
+                                'usr_email',
+                                'usr_age',
+                                'usr_sex',
+                                'usr_school',
+                                'usr_teaching_subjects',
+                                'usr_teaching_grade',
+                                'usr_experience',
+                                'usr_credit',
+                                'usr_phone_number',
+                                'usr_identity_verify',
+                                'use_certificate_verify',
+                            )
+                        teacher_info_list.extend(list(teacher_info))
+
+                    response_data['teacher_num'] = len(teacher_info_list)
+                    response_data['teacherinfo'].extend(teacher_info_list)
 
                     return JsonResponse(response_data)
 
