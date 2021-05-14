@@ -591,6 +591,7 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade,usr_no
         #查看用户有没有开通找老师功能和实名认证
         if is_login and usr_email:
             response_data['is_login'] = 'yes'
+            tab_obj = models.Table.objects.get(usr_email = usr_email) #获取用户信息
             if models.Table.objects.filter(usr_email=usr_email,usr_identity_verify = IDENTITY_VERIFIED).exists():
                 response_data['is_identity_verify'] = 'yes'
                 if models.Table.objects.filter(usr_email = usr_email,usr_is_paid_fundteacher = FUND_TEACHER_PAID).exists() :
@@ -604,7 +605,8 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade,usr_no
                         teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED, #学籍认证的老师才会出现
                             usr_teaching_subjects__contains = subjects, #模糊查询执教学科
                             usr_teaching_grade__contains = usr_teaching_grade, #模糊查询执教年级
-                            usr_now_city_county__contains= usr_now_city_county, #模糊查询所在地     
+                            usr_now_city_county__contains= usr_now_city_county, #模糊查询所在地   
+                            usr_sex__contains = tab_obj.usr_sex, #模糊查询性别(后面建议删除)
                             ).values(
                                 'usr_email',
                                 'usr_age',
