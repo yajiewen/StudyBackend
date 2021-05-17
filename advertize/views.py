@@ -73,13 +73,15 @@ def get_two_maps(request):
             if not models.Table_user.objects.filter(usr_email = usr_email).exists():
                 models.Table_user.objects.create(usr_email = usr_email)
                 print('created usr map')
-            user_map = models.Table_user.objects.filter(usr_email=usr_email)
+            else:
+                user_map = models.Table_user.objects.filter(usr_email=usr_email)
             #获取世界画像
             #世界画像不存在则创建世界画像
             if not models.Table_user_world.objects.filter(map_name = Global_Name).exists():
                 models.Table_user_world.objects.create(map_name = Global_Name)
                 print('create world map')
-            user_world_map = models.Table_user_world.objects.filter(map_name =Global_Name)
+            else:
+                user_world_map = models.Table_user_world.objects.filter(map_name =Global_Name)
 
             #获取画像字典
             user_map_dict = user_map.values()[0]
