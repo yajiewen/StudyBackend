@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'classinfo',
     'verify',
     'backstage',
+    'advertize',
 ]
 
 MIDDLEWARE = [

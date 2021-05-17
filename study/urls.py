@@ -23,5 +23,6 @@ urlpatterns = [
     path('evaluate/',include('evaluate.urls')), # 应用路由到evaluate中的urls再次路由
     path('classinfo/',include('classinfo.urls')), # 应用路由到classinfo中的urls再次路由
     path('verify/',include('verify.urls')),  #路由到verify中的urls再次路由
-    path('backstage/',include('backstage.urls')),
+    path('backstage/',include('backstage.urls')), #路由到backstage中的urls再次路由
+    path('advertize/',include('advertize.urls')), #路由到advertize中的urls再次路由
 ]
