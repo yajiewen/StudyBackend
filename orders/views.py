@@ -1373,8 +1373,8 @@ def get_take_order_info(request,usr_email):
             tab_obj1 = '' #order_table1 表中的订单信息
 
             try:
-                tab_obj = models.Table.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
-                tab_obj1 = models.Table1.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj = models.Table.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #按照接单时间由近到远排序 (order_by('order_accept_time')是由远到近)
+                tab_obj1 = models.Table1.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #按照接单时间由近到远排序
             except ObjectDoesNotExist:
                 print('ger order error')
             order_info_list = list(tab_obj) #获取订单信息构成的字典列表
@@ -1571,7 +1571,7 @@ def get_order_to_take(request,order_teaching_grade,order_teaching_subjects):
             'order_teaching_time',
             'order_total_money',
             'order_boss_require',
-            'order_worker_earnest_money',).filter(order_status=PAID,order_teaching_grade__contains=order_teaching_grade,order_teaching_subjects__contains=subject)   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  模糊匹配
+            'order_worker_earnest_money',).filter(order_status=PAID,order_teaching_grade__contains=order_teaching_grade,order_teaching_subjects__contains=subject).order_by('-order_start_time')   #value 返回包含对象具体值的字典的QuerySet 参数为限制哪些字段  模糊匹配
             order_list.extend(list(order_listo))
 
         response_data['is_get'] = 'yes'

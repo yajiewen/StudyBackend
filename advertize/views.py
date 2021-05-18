@@ -6,8 +6,10 @@ from django.forms.models import model_to_dict
 from account import models as amodels
 from orders import models as omodels
 import random
+from functools import reduce
 #全局画像字段名
 Global_Name = 'global_map'
+PAID = 1
 #数据库字段对应字典
 grade_dict = {
     '一年级':'pr_first_grade',
@@ -238,13 +240,24 @@ def get_adver_list(request):
             #获取推荐列表
             for grade in uinterest_grades:
                 for subject in uinterest_classes:
-                    order_list = omodels.Table.objects.filter(order_teaching_grade__contains = grade,order_teaching_subjects__contains = subject).order_by('-order_start_time').values().reverse() #按照时间由远到近
+                    order_list = omodels.Table.objects.filter(order_status=PAID,order_teaching_grade__contains = grade,order_teaching_subjects__contains = subject).order_by('order_start_time').values(
+                        'order_token',
+                        'order_start_time',
+                        'order_boss_email',
+                        'order_teaching_grade',
+                        'order_teaching_subjects',
+                        'order_hourly_money',
+                        'order_teaching_time',
+                        'order_total_money',
+                        'order_boss_require',
+                        'order_worker_earnest_money',
+                    ) #按照时间由远到近
                     uorderlist.extend(list(order_list))
                     #限制推荐数量(暂未开放该功能)
+            for dictv in uorderlist:
+                dictv['order_start_time'] = dictv['order_start_time'].strftime('%Y-%m-%d %H:%M:%S') #把datatime转化为字符串
             print(uorderlist)
 
-
-    
             #用户群画像推荐列表
             orderlist2 = []
             ginterest_grades = []
@@ -258,6 +271,7 @@ def get_adver_list(request):
             winterest_classes = [] #最感兴趣的科目
             wgrade_num = 2 #最感兴趣的几个年级
             wclass_num = 2 #最感兴趣的几个科目
+            worder_num = 10 #最大推荐订单数
 
             for keyvalue,weightvalue in world_map: #遍历排序后的字典(元祖列表)
                 if keyvalue in grade_dict.keys() and len(winterest_grades) < wgrade_num : #keyvalue 是年级信息并且感兴趣的年级的列表中元素少于grade_num 则向感兴趣的年级列表中添加年级
@@ -271,15 +285,32 @@ def get_adver_list(request):
             #获取推荐列表
             for grade in winterest_grades:
                 for subject in winterest_classes:
-                    order_list = omodels.Table.objects.filter(order_teaching_grade__contains = grade,order_teaching_subjects__contains = subject).order_by('-order_start_time').values().reverse() #按照时间由远到近
+                    order_list = omodels.Table.objects.filter(order_status=PAID,order_teaching_grade__contains = grade,order_teaching_subjects__contains = subject).order_by('order_start_time').values(
+                        'order_token',
+                        'order_start_time',
+                        'order_boss_email',
+                        'order_teaching_grade',
+                        'order_teaching_subjects',
+                        'order_hourly_money',
+                        'order_teaching_time',
+                        'order_total_money',
+                        'order_boss_require',
+                        'order_worker_earnest_money',
+                    )#按照时间由远到近
                     worderlist.extend(list(order_list))
-                    #限制推荐数量(暂未开放该功能)
+            #限制推荐数量(开放该功能)
+            if len(worderlist) >=worder_num:
+                worderlist = worderlist[:worder_num] #订单数量大于限制则切片
             print(worderlist)
+            #生成返回数据
+            response_data['orders'].extend(uorderlist)
+            response_data['orders'].extend(worderlist)
+            response_data['orders']=reduce(lambda x, y: y in x and x or x + [y], response_data['orders'], []) #字典列表去重方法(会有重复订单,需要去重)
+            response_data['order_num'] = len(response_data['orders'])
+            response_data['is_get'] = 'yes'
 
             return JsonResponse(response_data)
-            
         else:
-            return JsonResponse(response_data)
-            
+            return JsonResponse(response_data)    
     else:
         return HttpResponse('bad request',status = 500)
