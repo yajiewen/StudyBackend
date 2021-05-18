@@ -99,8 +99,8 @@ def get_two_maps(request):
         tgrade = request.POST.get('grade') #获取执教年级
         is_takeorder = request.POST.get('takeorder') #获取是否是接单按钮的传送
         increase_num = 1
-        if is_takeorder == 'yes': #是接单动作则权重增加10
-            increase_num = 10
+        if is_takeorder == 'yes': #是接单动作则权重增加50
+            increase_num = 50
 
         response_data = {
             'is_ok':'no'
@@ -219,7 +219,7 @@ def get_adver_list(request):
             #print('世界画像')
             #print(world_map)
 
-            #用户画像推荐列表
+            #用户画像推荐列表-------------------------------------------------
             usr_map = sorted(usr_map.items(), key=lambda x:x[1], reverse=True) #对画像字典排序
             print(usr_map)
             uorderlist = []
@@ -237,7 +237,7 @@ def get_adver_list(request):
 
             print(uinterest_grades)
             print(uinterest_classes)
-            #获取推荐列表
+
             for grade in uinterest_grades:
                 for subject in uinterest_classes:
                     order_list = omodels.Table.objects.filter(order_status=PAID,order_teaching_grade__contains = grade,order_teaching_subjects__contains = subject).order_by('order_start_time').values(
@@ -258,12 +258,12 @@ def get_adver_list(request):
                 dictv['order_start_time'] = dictv['order_start_time'].strftime('%Y-%m-%d %H:%M:%S') #把datatime转化为字符串
             print(uorderlist)
 
-            #用户群画像推荐列表
+            #用户群画像推荐列表-------------------------------------------------
             orderlist2 = []
             ginterest_grades = []
             ginterest_classes = []
 
-            #世界画像推荐列表
+            #世界画像推荐列表-------------------------------------------------
             world_map = sorted(world_map.items(), key=lambda x:x[1], reverse=True) #对画像字典排序
             print(world_map)
             worderlist = []
@@ -282,7 +282,6 @@ def get_adver_list(request):
             print(winterest_grades)
             print(winterest_classes)
 
-            #获取推荐列表
             for grade in winterest_grades:
                 for subject in winterest_classes:
                     order_list = omodels.Table.objects.filter(order_status=PAID,order_teaching_grade__contains = grade,order_teaching_subjects__contains = subject).order_by('order_start_time').values(
@@ -301,14 +300,30 @@ def get_adver_list(request):
             #限制推荐数量(开放该功能)
             if len(worderlist) >=worder_num:
                 worderlist = worderlist[:worder_num] #订单数量大于限制则切片
+            
+            for dictv in worderlist:
+                dictv['order_start_time'] = dictv['order_start_time'].strftime('%Y-%m-%d %H:%M:%S') #把datatime转化为字符串
             print(worderlist)
-            #生成返回数据
-            response_data['orders'].extend(uorderlist)
-            response_data['orders'].extend(worderlist)
-            response_data['orders']=reduce(lambda x, y: y in x and x or x + [y], response_data['orders'], []) #字典列表去重方法(会有重复订单,需要去重)
+
+            #生成返回数据(不可以是自己发的订单,返回的订单中订单号不可以重复)-------------------------------------------------
+            raw_order_list = []
+            raw_order_list1 = []
+            raw_order_list.extend(uorderlist)
+            raw_order_list.extend(worderlist)
+            #过滤自己发的订单
+            for orderinfo in raw_order_list:
+                if orderinfo['order_boss_email'] != usr_email:
+                    raw_order_list1.append(orderinfo)
+            
+            #过滤同一个订单
+            order_token_list = []
+            for orderinfo in raw_order_list1:
+                if orderinfo['order_token'] not in order_token_list:
+                    order_token_list.append(orderinfo['order_token'])
+                    response_data['orders'].append(orderinfo)
+
             response_data['order_num'] = len(response_data['orders'])
             response_data['is_get'] = 'yes'
-
             return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)    
