@@ -106,7 +106,7 @@ def get_two_maps(request):
             'is_ok':'no'
         }
         #邮箱和科目不空开始
-        if usr_email and subject_list and tgrade:
+        if usr_email and subject_list and tgrade and usr_email!= 'undefined':
             subject_list = subject_list.split(';')
             print(subject_list)
             #获取用户画像和世界画像
