@@ -6,7 +6,8 @@ import os
 # Create your views here.
 
 #配置nginx域名(部署的时候要改)
-nginxurl = 'http://124.70.87.28/'
+#nginxurl = 'http://124.70.87.28/'
+nginxurl = 'http://47.242.184.92/'
 #vimnginxurl = 'http://127.0.0.1/'
 apply_review = 0
 """
