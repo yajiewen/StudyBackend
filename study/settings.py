@@ -140,9 +140,10 @@ STATIC_URL = '/static/'
 
 #邮箱服务器配置(配置完后就可以使用Django自带函数发邮件)
 EMAIL_HOST = 'smtp.163.com'
-EMAIL_PORT = 25
+EMAIL_PORT = 465 #端口改为465 阿里云不开放25
 EMAIL_HOST_USER = 'eudtocher@163.com'
 EMAIL_HOST_PASSWORD = 'XHWQMPLGYYOHOYES'  #授权码
+EMAIL_USE_SSL = True
 
 
 #解决跨域问题
