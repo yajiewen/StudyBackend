@@ -17,7 +17,7 @@ FUNF_TEACHER_PRICE = 10 #购买找老师价格
 CERTIFICATE_VERIFIED = 1
 IDENTITY_VERIFIED = 1
 
-VERIFY_BASE_URL = 'https://www.redtreetest.com'
+VERIFY_BASE_URL = 'https://www.kidtut.net'
 """
 ------注册功能------
 ------接收前端发送的账号 密码 用户名 ，判断前端是不是POST方法的请求，不是则返回bad request，如果是则判断账号和用户名是否已经存在，
@@ -62,7 +62,7 @@ def usr_add(request): #创建账号
             response_data['is_add']='yes'
             #发送验证邮件
             subject = 'Edu account verify'
-            message = '尊敬的用户\n  您正在申请红树林家教账号\n请点击链接进行邮箱验证'+VERIFY_BASE_URL+'/account/emailverify/'+usr_email+'/'
+            message = '尊敬的用户\n  您正在申请思达迪家教账号\n请点击链接进行邮箱验证'+VERIFY_BASE_URL+'/account/emailverify/'+usr_email+'/'
             from_email = 'eudtocher@163.com'
             recept_email =[usr_email]  #接收可以有多个人
             
@@ -183,7 +183,7 @@ def usr_send_verify_email(request):
         }
 
         subject = 'Edu account verify'
-        message = 'https://124.70.87.28:8000/account/emailverify/'+usr_email+'/'
+        message = '尊敬的用户\n  您正在申请思达迪家教账号\n请点击链接进行邮箱验证'+VERIFY_BASE_URL+'/account/emailverify/'+usr_email+'/'
         from_email = 'eudtocher@163.com'
         recept_email =[usr_email]  #接收可以有多个人
         #如果接收邮件不空且在数据库中已经添加了该邮件账号则发送验证邮件,且邮件未验证
