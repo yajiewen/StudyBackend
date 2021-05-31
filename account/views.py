@@ -62,12 +62,12 @@ def usr_add(request): #创建账号
             response_data['is_add']='yes'
             #发送验证邮件
             subject = 'Edu account verify'
-            message = '尊敬的用户\n  您正在申请思达迪家教账号\n请点击链接进行邮箱验证'+VERIFY_BASE_URL+'/account/emailverify/'+usr_email+'/'
+            message = '尊敬的用户\n  您正在申请思达迪家教平台账号\n请点击链接进行邮箱验证'+VERIFY_BASE_URL+'/account/emailverify/'+usr_email+'/'
             from_email = 'eudtocher@163.com'
             recept_email =[usr_email]  #接收可以有多个人
             
             try:
-                send_mail(subject,message,from_email,recept_email) #发送邮件
+                send_mail(subject,'',from_email,recept_email,html_message=message) #发送html类型的邮件
                 response_data['is_send_verify'] = 'yes'
             except (BadHeaderError,SMTPDataError):
                 print('邮件发送失败')
