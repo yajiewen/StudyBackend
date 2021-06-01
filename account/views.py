@@ -13,7 +13,7 @@ FUND_TEACHER_PAID = 1
 FUND_TEACHER_NOT_PAID = 0
 FUNF_TEACHER_PRICE = 10 #购买找老师价格
 
-
+Email_VERIFIED = 1
 CERTIFICATE_VERIFIED = 1
 IDENTITY_VERIFIED = 1
 
@@ -252,12 +252,14 @@ def usr_change_password(request):
         usr_newpassword = request.POST.get('unewpassword') #新密码
 
         response_data = {
+            'is_verified':'no',
             'is_matching':'no',
             'is_update_password':'no'
         }
-
+        
         if usr_email and usr_password:  #判断用户名和密码是否是空
-            if models.Table.objects.filter(usr_email=usr_email,usr_password=usr_password).exists():
+            if models.Table.objects.filter(usr_email=usr_email,usr_password=usr_password,usr_verify = Email_VERIFIED).exists(): # 判断邮箱是否存在和是否验证
+                response_data['is_verified'] = 'yes'
                 response_data['is_matching'] = 'yes'
                 models.Table.objects.filter(usr_email=usr_email,usr_password=usr_password).update(usr_password=usr_newpassword) #设置新密码
                 response_data['is_update_password'] = 'yes'
@@ -289,12 +291,14 @@ def usr_find_password(request):
     if request.method == 'POST':
         usr_email = request.POST.get('uemail')
         response_data ={
+            'is_verified':'no',
             'uemail_exist':'no',
             'is_send_password':'no'
         }
         usr_info = ''
-        if models.Table.objects.filter(usr_email=usr_email).exists(): #判断邮箱是否存在
+        if models.Table.objects.filter(usr_email=usr_email,usr_verify = Email_VERIFIED).exists(): #判断邮箱是否存在和是否验证
             response_data['uemail_exist'] = 'yes'
+            response_data['is_verified'] = 'yes'
             #邮件信息
             try:
                 usr_info = models.Table.objects.get(usr_email=usr_email) #获取用户信息
