@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'tq4ubctg-c2!zuw_)#zxr39-%)rd8(0g=pb5u#f6_w6j89^8o9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*'] #避免bad request 问题
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'verify',
     'backstage',
     'advertize',
+    'wechatpay',
 ]
 
 MIDDLEWARE = [

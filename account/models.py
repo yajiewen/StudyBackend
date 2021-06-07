@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 # Create your models here.
 class Table(models.Model):
-    usr_email = models.CharField(max_length=100,primary_key=True) #用户名
+    usr_email = models.CharField(max_length=100,primary_key=True) #用邮箱
     usr_password = models.CharField(max_length=200) #登录密码
     usr_verify = models.IntegerField(default=0) #用户邮箱验证  0 未验证 1 验证
     usr_name = models.CharField(max_length=200) #昵称
