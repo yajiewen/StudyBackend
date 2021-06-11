@@ -58,7 +58,7 @@ def buycoin(request):
             params['sign'] = sign
 
             xml = func.trans_dict_to_xml(params)
-            response = requests.request('post', setting.WECHATORDER_URL, data=xml.encode())  # 以POST方式向微信公众平台服务器发起请求
+            response = requests.request('post', setting.WECHATORDER_URL, data=xml.encode('utf-8'))  # 以POST方式向微信公众平台服务器发起请求
             data_dict = func.trans_xml_to_dict(response.content.decode('utf-8'))  # 将请求返回的数据转为字典
             print(data_dict)
     
@@ -98,4 +98,5 @@ def check_pay(request):
         '''
             此处编写支付失败后的业务逻辑
         '''
+        print('支付失败！')
         return HttpResponse('failed')
