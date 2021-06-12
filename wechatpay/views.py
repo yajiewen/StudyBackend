@@ -9,6 +9,9 @@ from wechatpay import func
 from django.views.decorators.csrf import csrf_exempt  # 解除csrf验证
 # Create your views here.
 
+PAY_FAILED = 0
+PAY_SUCCESS = 1
+
 """
 ======微信支付进行充值======
 api: https://www.kidtut.net/wechatpay/buycoin/
@@ -27,6 +30,7 @@ def buycoin(request):
 
         response_data = {
             'is_login':'no',
+            'order_token':'no',
             'code_url':'no',
             'coin_legal':'no',
         }
@@ -39,6 +43,7 @@ def buycoin(request):
             total_fee = int(coin_num * 100) #单位为分(一角10分)
             body = '思达迪账户充值' #商品描述
             out_trade_no = func.order_num(usr_email) #获取订单号
+            response_data['order_token'] = out_trade_no
 
             #配置请求参数
             params = {
@@ -51,7 +56,6 @@ def buycoin(request):
                 'spbill_create_ip' : setting.CREATE_IP, # 发送请求服务器的IP地址
                 'notify_url' : setting.BACK_NOFIFY_URL, # 支付回调地址
                 'trade_type' : setting.TRADE_TYPE, # 支付类型
-
             }
 
             sign = func.get_sign(params,setting.API_KEY) #参数签名
@@ -64,13 +68,18 @@ def buycoin(request):
     
             if data_dict.get('return_code') == 'SUCCESS':  # 如果请求成功
                 response_data['code_url'] = data_dict.get('code_url') # 获取code_url
-
-
+                #在数据库中创建订单
+                models.Table.objects.create(
+                    order_token = out_trade_no,
+                    usr_email = usr_email,
+                    coin_num = coin_num,
+                    order_status = PAY_FAILED,
+                    order_start_time = timezone.now(),
+                )
                 return JsonResponse(response_data)
             return JsonResponse(response_data)
         else:
             return JsonResponse(response_data)
-
     else:
         return HttpResponse('bad request',status = 500)
 
@@ -86,7 +95,9 @@ api: https://www.kidtut.net/wechatpay/check_pay/
 @csrf_exempt  # 去除csrf验证
 def check_pay(request):
     data_dict = func.trans_xml_to_dict(request.body)  # 回调数据转字典
+    print(data_dict)
     sign = data_dict.pop('sign')  # 取出签名
+    print(sign)
     back_sign = func.get_sign(data_dict, setting.API_KEY)  # 计算签名
     if sign == back_sign:  # 验证签名是否与回调签名相同
         '''
