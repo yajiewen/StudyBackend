@@ -107,13 +107,13 @@ def check_pay(request):
         if data_dict['result_code'] == 'SUCCESS':
             models.Table.objects.filter(
                 order_token = data_dict['out_trade_no'],
-                coin_num = data_dict['total_fee'] / 100, #把分转化为元
+                coin_num = float(data_dict['total_fee']) / 100, #把分转化为元
                 ).update(order_status = PAY_SUCCESS)
             
             #获取订单信息
             tab_obj = models.Table.objects.get(                
                 order_token = data_dict['out_trade_no'],
-                coin_num = data_dict['total_fee'] / 100, #把分转化为元
+                coin_num = float(data_dict['total_fee']) / 100, #把分转化为元
                 order_status = PAY_SUCCESS)
 
             usr_info = amodels.Table.objects.get(usr_email = tab_obj.usr_email) #获取用户信息
