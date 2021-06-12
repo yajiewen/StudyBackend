@@ -36,7 +36,7 @@ def buycoin(request):
             'coin_legal':'no',
         }
 
-        if amodels.Table.objects.filter(usr_email = usr_email).exists() and is_login and coin_num <= setting.BUY_LIMIT:
+        if amodels.Table.objects.filter(usr_email = usr_email).exists() and is_login and coin_num <= setting.BUY_LIMIT and coin_num >= 0.01: #最少冲1分钱
             response_data['coin_legal'] = 'yes'
             response_data['is_login'] = 'yes'
 

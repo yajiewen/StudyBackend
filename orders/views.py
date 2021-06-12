@@ -8,6 +8,7 @@ from orders import models
 from account import models as amodels
 import time
 import datetime
+import math
 from django.utils import timezone
 from django.forms.models import model_to_dict
 #######################订单状态定义######################
@@ -111,7 +112,9 @@ def boss_create_order(request):
                     order_boss_phone_number and order_boss_qq_wei): #这些信息不可以为空 
                     #向数据库订单表里面添加一条订单信息
                     #核算一下总金额防止信息被恶意篡改
-                    if float(order_hourly_money) * float(order_teaching_time) == float(order_total_money):
+                    print(float(order_hourly_money) * float(order_teaching_time))
+                    print(float(order_total_money))
+                    if math.isclose(float(order_hourly_money) * float(order_teaching_time) , float(order_total_money)):
                         response_data['order_token'] = order_token
                         models.Table.objects.create (order_token=order_token,order_boss_email=order_boss_email,order_start_time=order_start_time,
                         order_status=order_status,order_teaching_grade=order_teaching_grade,order_teaching_subjects=order_teaching_subjects,
@@ -204,7 +207,7 @@ def boss_update_order(request):
                     order_boss_phone_number and order_boss_qq_wei): #这些信息不可以为空 
                     #向数据库修改订单信息
                     #核算一下总金额防止信息被恶意篡改
-                    if float(order_hourly_money) * float(order_teaching_time) == float(order_total_money):
+                    if math.isclose(float(order_hourly_money) * float(order_teaching_time) , float(order_total_money)):
                         tab_obj = models.Table.objects.filter(order_token=order_token,order_boss_email=order_boss_email,order_status=UN_PAID)
                         if tab_obj.exists():
                             tab_obj.update(order_teaching_grade=order_teaching_grade,order_teaching_subjects=order_teaching_subjects,
