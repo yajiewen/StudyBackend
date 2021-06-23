@@ -6,6 +6,7 @@ class Table(models.Model):
     usr_password = models.CharField(max_length=200) #登录密码
     usr_verify = models.IntegerField(default=0) #用户邮箱验证  0 未验证 1 验证
     usr_name = models.CharField(max_length=200) #昵称
+    usr_head_img_url = models.CharField(max_length=100,default='') #昵称
     usr_age = models.IntegerField(default=0) #年龄
     usr_sex = models.CharField(max_length=10) #性别
     usr_major  = models.CharField(max_length=100,default='') #专业

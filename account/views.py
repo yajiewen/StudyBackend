@@ -7,6 +7,8 @@ from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 import json
 from account import models
 from threading import Thread
+import os
+from verify.views import nginxurl
 # Create your views here.
 ###########################找老师价格#################
 FUND_TEACHER_PAID = 1
@@ -477,6 +479,7 @@ def usr_get_info(request):
             response_data['u_now_province'] = tab_obj.usr_now_province #现在所在省
             response_data['is_certificate_verify'] = tab_obj.use_certificate_verify #学历是否验证
             response_data['is_identity_verify'] =tab_obj.usr_identity_verify #是否身份认证
+            response_data['head_img_url'] = tab_obj.usr_head_img_url # 用户头像路径
 
             return JsonResponse(response_data)
         else:
@@ -706,6 +709,59 @@ def usr_get_teacher_info(request,worker_email):
     else:
         return HttpResponse('bad request',status=500)
 
+
+"""
+------上传头像功能------
+方法:post
+数据:cookies 
+      uemail : 用户邮箱
+api:https://127.0.0.1:8081/account/uploadheadimg/
+后端返回值:
+
+"""
+def usr_upload_head_img(request):
+    if request.method == 'POST':
+        HeadImg = request.FILES.get('headimg')
+        is_login = request.COOKIES.get('is_login') #获取登录状态
+        usr_email = request.POST.get('uemail') #获取用户邮箱
+        cookie_email = request.COOKIES.get('uemail') #获取cookie 里面的邮箱
+        prefix = usr_email.split('@')[0] #获取前缀用于文件命名
+
+        HeadImgFile = HeadImg.read()
+
+        response_data = {
+            'is_login':'no',
+            'is_upload':'no',
+        }
+
+        if is_login and usr_email == cookie_email:
+            response_data['is_login'] = 'yes'
+            if models.Table.objects.filter(usr_email=usr_email).exists():
+                base_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
+                headImgFolderPath = os.path.join(base_path,'HeadImgFolder')
+                if not os.path.exists(headImgFolderPath): #文件夹不存在则创建
+                    os.makedirs(headImgFolderPath)
+                    print(headImgFolderPath)
+                #设置头像图片名字
+                headImgName = prefix+'head_img.jpg'
+                #创建文件存储路径
+                headImgFilePath = os.path.join(headImgFolderPath,headImgName)
+                #写入文件(因为名字相同,所以之前的图片会被覆盖)
+                with open(headImgFilePath,'wb') as imgobj:
+                    imgobj.write(HeadImgFile)
+
+                #配置imgurl
+                headImgUrl = nginxurl+'HeadImgFolder/'+headImgName
+                #更新用户头像路径信息
+                models.Table.objects.filter(usr_email=usr_email).update(usr_head_img_url = headImgUrl)
+                response_data['is_upload'] = 'yes'
+                return JsonResponse(response_data)
+            else:
+                return JsonResponse(response_data)
+        else:
+            return JsonResponse(response_data)
+    else:
+        return HttpResponse('bad request', status = 500)
 
 
 def usr_test(request): #登录功能

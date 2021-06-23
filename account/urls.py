@@ -14,5 +14,6 @@ urlpatterns = [
     path('buyteacherfunc/',usr_buy_fund_teacher), #购买找老师模块 10 
     path('getteacherlist/<str:usr_teaching_subjects>/<str:usr_teaching_grade>/<str:usr_now_city_county>/',usr_get_teacher_list), #获取老师信息列表 11
     path('getteacherinfo/<str:worker_email>/',usr_get_teacher_info), #获取老师信息
+    path('uploadheadimg/',usr_upload_head_img), # 用户上传头像
     path('usrtest/',usr_test),  #cookie samesite 问题解决测试 
 ]
