@@ -389,7 +389,7 @@ def worker_take_over_order(request):
                         except ObjectDoesNotExist:
                             print('order get error!')
                         subject = 'Edu 您的订单被接手'
-                        message = tab_obj1.order_boss_email+ '你的订单:' + tab_obj1.order_token + '\n'+tab_obj1.order_teaching_subjects +'\n' +str(tab_obj1.order_total_money)+'元'+'已被接单者：'+tab_obj1.order_worker_email+'接单！'
+                        message = tab_obj1.order_boss_email+ '你的订单:' + tab_obj1.order_token + '\n'+tab_obj1.order_teaching_subjects +'\n' +str(round(tab_obj1.order_total_money,2))+'元'+'已被接单者：'+tab_obj1.order_worker_email+'接单！'
                         from_email = 'eudtocher@163.com'
                         recept_email =[tab_obj1.order_boss_email]  #接收可以有多个人
 
@@ -462,7 +462,7 @@ def worker_cancel_order(request):
 
                 #给老板发送订单被取消的邮件邮件
                 subject = 'Edu 对方取消接单'
-                message = tab_obj.order_boss_email+ '你的订单:' + tab_obj.order_token + '\n'+tab_obj.order_teaching_subjects +'\n' +str(tab_obj.order_total_money)+'元'+'已被接单者：'+tab_obj.order_worker_email+'取消！'
+                message = tab_obj.order_boss_email+ '你的订单:' + tab_obj.order_token + '\n'+tab_obj.order_teaching_subjects +'\n' +str(round(tab_obj.order_total_money,2))+'元'+'已被接单者：'+tab_obj.order_worker_email+'取消！'
                 from_email = 'eudtocher@163.com'
                 recept_email =[tab_obj.order_boss_email]  #接收可以有多个人
 
@@ -719,7 +719,7 @@ def boss_refund_order(request):
                         
                         #给老师发送提醒邮件
                         subject = 'Edu 订单申请退款'
-                        message = tab_obj.order_worker_email + '你有一笔订单已被取消，'+'退回对方金额:'+str(order_refund_money)+'你得到报酬:'+str(tab_obj.order_total_money - order_refund_money)+'保证金:'+str(tab_obj.order_worker_earnest_money)
+                        message = tab_obj.order_worker_email + '你有一笔订单已被取消，'+'退回对方金额:'+str(order_refund_money)+'你得到报酬:'+str(round(tab_obj.order_total_money - order_refund_money,2))+'保证金:'+str(round(tab_obj.order_worker_earnest_money,2))
                         from_email = 'eudtocher@163.com'
                         recept_email =[tab_obj.order_worker_email]  #接收可以有多个人
 
@@ -985,7 +985,7 @@ def worker_agree_refund(request):
 
                 #给老板发送邮件信息
                 subject = 'Edu 订单用户同意您申请的退款'
-                message = order_boss_email + '您的接的订单：'+order_token + '对方已同意退款退款' + '退款金额' + str(order_refund_money)
+                message = order_boss_email + '您的接的订单：'+order_token + '对方已同意退款退款' + '退款金额' + str(round(order_refund_money,2))
                 from_email = 'eudtocher@163.com'
                 recept_email =[order_boss_email]  #接收可以有多个人
 
@@ -1202,7 +1202,7 @@ def boss_agree_complete(request):
                 response_data['order_status'] = COMPLETE
                 #给老师发送结单信息
                 subject = 'Edu 您的订单对方已同意结单'
-                message = worker_info.usr_email + '您的家教订单：'+order_token + tab_obj.order_teaching_grade + tab_obj.order_teaching_subjects + '已入账' +str(tab_obj.order_total_money)+'元,保证金'+str(tab_obj.order_worker_earnest_money)+ '元' 
+                message = worker_info.usr_email + '您的家教订单：'+order_token + tab_obj.order_teaching_grade + tab_obj.order_teaching_subjects + '已入账' +str(round(tab_obj.order_total_money,2))+'元,保证金'+str(round(tab_obj.order_worker_earnest_money,2))+ '元' 
                 from_email = 'eudtocher@163.com'
                 recept_email =[worker_info.usr_email]  #接收可以有多个人
                 try:
