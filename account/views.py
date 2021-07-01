@@ -628,6 +628,7 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade,usr_no
                                 'usr_phone_number',
                                 'usr_identity_verify',
                                 'use_certificate_verify',
+                                'usr_head_img_url',
                             )
                         teacher_info_list.extend(list(teacher_info))
 
