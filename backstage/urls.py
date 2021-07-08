@@ -9,4 +9,6 @@ urlpatterns = [
     path('slist/',admin_get_student_list),
     path('iverify/',admin_verify_identity),
     path('sverify/',admin_verify_student),
+    path('orderstocomplete/',get_orders_to_complete),
+    path('completeorders/',complete_orders),
 ]
