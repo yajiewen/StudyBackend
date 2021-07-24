@@ -512,7 +512,7 @@ def complete_orders(request):
             #把未验证时间超过24小时的加入bad account list
             time_now = datetime.datetime.now()
             for order in order_list:
-                if (time_now - order['order_complet_time']).total_seconds() >3600:   #.seconds 只计算小时分钟秒 部分之间的时间差 要使用total_seconds()
+                if (time_now - order['order_complet_time']).total_seconds() >3*24*3600:   #.seconds 只计算小时分钟秒 部分之间的时间差 要使用total_seconds()
                     tab_objf = omodels.Table.objects.filter(order_token=order['order_token'],order_status=APPLY_COMPLETE) #查找订单
                     if tab_objf.exists():
                         tab_obj = omodels.Table.objects.get(order_token=order['order_token'],order_status = APPLY_COMPLETE)
