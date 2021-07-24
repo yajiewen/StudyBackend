@@ -11,4 +11,5 @@ urlpatterns = [
     path('sverify/',admin_verify_student),
     path('orderstocomplete/',get_orders_to_complete),
     path('completeorders/',complete_orders),
+    path('stageusrinfo/',get_stage_usrinfo),
 ]

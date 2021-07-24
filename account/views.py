@@ -612,6 +612,7 @@ def usr_get_teacher_list(request,usr_teaching_subjects,usr_teaching_grade,usr_no
                     for subjects in teaching_subjects_list: #查询每一个学科
 
                         teacher_info = models.Table.objects.filter(use_certificate_verify = CERTIFICATE_VERIFIED, #学籍认证的老师才会出现
+                            usr_identity_verify = IDENTITY_VERIFIED, # 老师也需要实名认证
                             usr_teaching_subjects__contains = subjects, #模糊查询执教学科
                             usr_teaching_grade__contains = usr_teaching_grade, #模糊查询执教年级
                             usr_now_city_county__contains= usr_now_city_county, #模糊查询所在地   

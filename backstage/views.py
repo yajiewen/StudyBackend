@@ -15,6 +15,8 @@ from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 from orders.views import APPLY_COMPLETE
 from orders.views import COMPLETE
 from orders.views import BOSS_AGREEE_COMPLETE
+from account.views import Email_VERIFIED
+from account.views import FUND_TEACHER_PAID
 NOT_VERIFY = 0 #邮箱未验证
 apply_review =0 #申请审核
 application_passed = 1 #认证通过
@@ -557,3 +559,42 @@ def complete_orders(request):
             return JsonResponse(response_data)
     else:
         return HttpResponse('bad request', status = 500)
+
+"""
+------客服显示注册人数,实名认证人数,老师注册人数,老师人数------
+method get
+参数 cookies
+api:https://127.0.0.1:8081/backstage/stageusrinfo/
+后端返回值:
+
+"""
+def get_stage_usrinfo(request):
+    if request.method == 'GET':
+        #获取管理员账号和登录状态
+        response_data ={
+            'is_login':'no',
+            'regs_num':0,
+            'id_identified_num':0,
+            'teacher_num':0,
+            'buy_find_teacher_num':0,
+        }
+
+        usr_account = request.COOKIES.get('account')
+        is_admin_login = request.COOKIES.get('is_admin_login')
+        if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
+            response_data['is_login'] = 'yes'
+
+            # 查询注册人数
+            response_data['regs_num'] = amodels.Table.objects.filter(usr_verify = Email_VERIFIED).count()
+            # 查询实名认证人数
+            response_data['id_identified_num'] = amodels.Table.objects.filter(usr_identity_verify = IDENTITY_VERIFIED).count()
+            # 查询老师注册人数
+            response_data['teacher_num'] = amodels.Table.objects.filter(usr_identity_verify = IDENTITY_VERIFIED,use_certificate_verify = CERTIFICATE_VERIFIED).count()
+            # 查询购买找老师功能的数
+            response_data['buy_find_teacher_num'] = amodels.Table.objects.filter(usr_is_paid_fundteacher = FUND_TEACHER_PAID).count()
+
+            return JsonResponse(response_data)
+        else:
+            return JsonResponse(response_data)
+    else:
+        return HttpResponse('Bad request',status = 500)
