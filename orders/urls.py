@@ -18,4 +18,6 @@ urlpatterns =[
     path('breleaselist/<str:usr_email>/',get_release_order_info), #获取老板发单表 14
     path('ordertotake/<str:order_teaching_grade>/<str:order_teaching_subjects>/',get_order_to_take), #获取待接的单，当没有过滤的时候 年级=no  科目=no 有过滤写相应的值 15 
     path('sendclassreminder/',send_class_reminder), #发送上课邮件提醒
+    path('whideorder/',worker_hide_order), #老师隐藏订单
+    path('bhideorder/',boss_hide_order), #家长隐藏订单
 ]

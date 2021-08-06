@@ -15,6 +15,9 @@ from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 from orders.views import APPLY_COMPLETE
 from orders.views import COMPLETE
 from orders.views import BOSS_AGREEE_COMPLETE
+from orders.views import TAKEOVER
+from orders.views import REFUND_SUCCESS
+from orders.views import BOSS_ASK_REFUND
 from account.views import Email_VERIFIED
 from account.views import FUND_TEACHER_PAID
 NOT_VERIFY = 0 #邮箱未验证
@@ -566,7 +569,13 @@ method get
 参数 cookies
 api:https://127.0.0.1:8081/backstage/stageusrinfo/
 后端返回值:
-
+{
+    'is_login':'yes',
+    'regs_num':1,
+    'id_identified_num':6,
+    'teacher_num':3,
+    'buy_find_teacher_num':1,
+}
 """
 def get_stage_usrinfo(request):
     if request.method == 'GET':
@@ -598,3 +607,153 @@ def get_stage_usrinfo(request):
             return JsonResponse(response_data)
     else:
         return HttpResponse('Bad request',status = 500)
+
+"""
+------客服接入退款(给家长)------
+method post
+参数 cookies
+form-data 
+    订单号 otoken 
+    退款金额 refundmoney 
+api:https://127.0.0.1:8081/backstage/dealorder/
+后端返回值:
+{
+    "is_login": "yes",
+    "is_deal": "yes"
+}
+"""
+def dear_order(request):
+    if request.method == 'POST':
+        response_data ={
+            'is_login':'no',
+            'is_deal':'no',
+        }
+
+        usr_account = request.COOKIES.get('account')
+        is_admin_login = request.COOKIES.get('is_admin_login')
+        order_token = request.POST.get('otoken')
+        refund_money = float(request.POST.get('refundmoney'))
+
+        if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists() and refund_money >= 0: #登录并且账号存在
+            response_data['is_login'] = 'yes'
+
+            #获取订单信息
+            tab_obj =''
+            try:
+                tab_obj = omodels.Table.objects.get(order_token = order_token)
+            except:
+                return JsonResponse(response_data)
+             #判断订单状态是不是已接手 或申请完成
+            if tab_obj.order_status == TAKEOVER or tab_obj.order_status == APPLY_COMPLETE:
+                #获取员工info 并更新
+                print('====================================')
+                worker_info = amodels.Table.objects.get(usr_email = tab_obj.order_worker_email)
+                worker_coin = worker_info.usr_coin + tab_obj.order_worker_earnest_money + (tab_obj.order_total_money - refund_money)
+                worker_info.usr_coin = worker_coin
+                worker_info.save()
+                #获取家长info 并更新
+                boss_info = amodels.Table.objects.get(usr_email = tab_obj.order_boss_email)
+                boss_coin = boss_info.usr_coin + refund_money
+                boss_info.usr_coin = boss_coin
+                boss_info.save()
+                
+                #更新订单状态
+                #给老师发送提醒邮件
+                subject = 'Edu 订单申请退款'
+                message = tab_obj.order_worker_email + '你有一笔订单已被客服取消，'+'退回对方金额:'+str(refund_money)+'你得到报酬:'+str(round(tab_obj.order_total_money - refund_money,2))+'保证金:'+str(round(tab_obj.order_worker_earnest_money,2))
+                from_email = 'eudtocher@163.com'
+                recept_email =[tab_obj.order_worker_email]  #接收可以有多个人
+                try:
+                    send_mail(subject, message, from_email, recept_email)
+                except (BadHeaderError,SMTPDataError):
+                    print('send email falied')
+
+                #把该订单放入order_table1  26 项 有1项earnest monry不用写
+                omodels.Table1.objects.create(
+                    order_token = tab_obj.order_token,
+                    order_boss_email = tab_obj.order_boss_email,
+                    order_worker_email = tab_obj.order_worker_email,
+                    order_start_time = tab_obj.order_start_time,
+                    order_accept_time = tab_obj.order_accept_time,
+                    order_complet_time = tab_obj.order_complet_time,
+                    order_end_time = tab_obj.order_end_time,
+                    order_status =REFUND_SUCCESS,#-----------
+                    order_is_worker_ask_complet = tab_obj.order_is_worker_ask_complet,
+                    order_is_boss_agree_complet = tab_obj.order_is_boss_agree_complet,
+                    order_is_boss_ask_refund = BOSS_ASK_REFUND,#----------------
+                    order_refund_reason = '客服介入退款', #----------------
+                    order_is_worker_agree_refund = tab_obj.order_is_worker_agree_refund,
+                    order_refund_money = refund_money,#-----------------
+                    order_teaching_grade = tab_obj.order_teaching_grade,
+                    order_teaching_subjects = tab_obj.order_teaching_subjects,
+                    order_hourly_money = tab_obj.order_hourly_money,
+                    order_teaching_time = tab_obj.order_teaching_time,
+                    order_total_money = tab_obj.order_total_money,
+                    order_boss_name = tab_obj.order_boss_name,
+                    order_boss_phone_number = tab_obj.order_boss_phone_number,
+                    order_boss_qq_wei = tab_obj.order_boss_qq_wei,
+                    order_boss_require = tab_obj.order_boss_require,
+                    order_worker_name = tab_obj.order_worker_name,
+                    order_worker_phone_number = tab_obj.order_worker_phone_number,
+                    order_worker_qq_wei = tab_obj.order_worker_qq_wei,
+                    order_is_evalute= tab_obj.order_is_evalute
+                )
+                #删除order_table中的原订单
+                omodels.Table.objects.filter(order_token=order_token).delete()
+                response_data['is_deal'] = 'yes'
+
+        return JsonResponse(response_data)
+        
+    else:
+        return HttpResponse('bad request',status =500)
+"""
+------客服获取订单信息------
+method post
+参数 cookies
+form-data 
+    订单号 otoken 
+api:https://127.0.0.1:8081/backstage/getorderinfo/
+后端返回值:
+{
+    "is_login": "yes",
+    "is_get": "yes"
+}
+"""
+
+def get_order_info(request):
+    if request.method == 'POST':
+        response_data ={
+            'is_login':'no',
+            'is_get':'no',
+            'order_info':'',
+        }
+
+        usr_account = request.COOKIES.get('account')
+        is_admin_login = request.COOKIES.get('is_admin_login')
+        order_token = request.POST.get('otoken')
+        
+        if is_admin_login and models.Table.objects.filter(usr_account = usr_account).exists(): #登录并且账号存在
+            response_data['is_login'] = 'yes'
+            if omodels.Table.objects.filter(order_token = order_token).exists():
+                tab_info = omodels.Table.objects.filter(order_token = order_token).values(
+                    'order_teaching_grade',
+                    'order_teaching_subjects',
+                    'order_hourly_money',
+                    'order_teaching_time',
+                    'order_total_money',
+                    'order_boss_name',
+                    'order_boss_phone_number',
+                    'order_boss_qq_wei',
+                    'order_boss_require',
+                    'order_worker_name',
+                    'order_worker_phone_number',
+                    'order_worker_qq_wei',
+                )
+                tab_info = list(tab_info)
+                response_data['order_info'] = tab_info[0]
+                response_data['is_get'] = 'yes'
+        
+        return JsonResponse(response_data)
+
+    else:
+        return HttpResponse('bad request', status =500)

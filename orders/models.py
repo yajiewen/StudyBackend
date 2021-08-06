@@ -64,3 +64,7 @@ class Table1(models.Model): #结束的订单放在这个表（状态为这些的
     order_worker_phone_number = models.CharField(max_length=11) #老师电话
     order_worker_qq_wei = models.CharField(max_length=200) #老师微信或qq
     order_is_evalute = models.IntegerField(default=0) #(0:未评价 1 已评价)
+
+    # 隐藏订单 (0 未隐藏 1 已经隐藏)
+    worker_hide_order = models.IntegerField(default=0) 
+    boss_hide_order = models.IntegerField(default=0)

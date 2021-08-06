@@ -12,4 +12,6 @@ urlpatterns = [
     path('orderstocomplete/',get_orders_to_complete),
     path('completeorders/',complete_orders),
     path('stageusrinfo/',get_stage_usrinfo),
+    path('dealorder/',dear_order),
+    path('getorderinfo/',get_order_info),
 ]

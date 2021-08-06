@@ -1,5 +1,5 @@
 from django.shortcuts import render,HttpResponse
-from django.http import JsonResponse
+from django.http import JsonResponse, response
 from django.core.mail import BadHeaderError,send_mail
 from smtplib import SMTPDataError #被当成垃圾邮件后发送失败的excpt
 from django.core.exceptions import ObjectDoesNotExist
@@ -33,6 +33,9 @@ BOSS_AGREEE_COMPLETE = 1
 
 NOT_EVALUATE = 0 #订单为评价
 EVALUATED = 1 #订单已经评价
+
+HIDE_ORDER = 1
+NOT_HIDE_ORDER = 0
 
 # Create your views here.
 """
@@ -703,7 +706,6 @@ def boss_refund_order(request):
                     #两个时间相减看是不是超过了一小时,未超时直接退款
                     if (time_now - order_accept_time).total_seconds() <= 3600: #.seconds 只计算小时分钟秒 部分之间的时间差 要使用total_seconds()
                         #退回coin
-                        print(order_refund_money)
                         boss_coin = amodels.Table.objects.get(usr_email=order_boss_email).usr_coin #获取老板当前coin
                         worker_coin = amodels.Table.objects.get(usr_email=tab_obj.order_worker_email).usr_coin #获取员工coin
                         #校验退款金额
@@ -1220,7 +1222,7 @@ def boss_agree_complete(request):
 
     
 """
-------获取用户接单信息------
+------获取用户接单信息(未隐藏的单)------
 ------接收前端发送的账号，判断是不是GET请求，不是则返回bad request，若是则提取cookie中的用户邮箱和登录状态，
 ------若为已登录则读取订单信息然后把时间转化为字符串后返回给前端
 前端请求方法：GET
@@ -1377,7 +1379,7 @@ def get_take_order_info(request,usr_email):
 
             try:
                 tab_obj = models.Table.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #按照接单时间由近到远排序 (order_by('order_accept_time')是由远到近)
-                tab_obj1 = models.Table1.objects.filter(order_worker_email=order_worker_email).order_by('-order_accept_time').values() #按照接单时间由近到远排序
+                tab_obj1 = models.Table1.objects.filter(order_worker_email=order_worker_email,worker_hide_order = NOT_HIDE_ORDER).order_by('-order_accept_time').values() #按照接单时间由近到远排序
             except ObjectDoesNotExist:
                 print('ger order error')
             order_info_list = list(tab_obj) #获取订单信息构成的字典列表
@@ -1405,7 +1407,7 @@ def get_take_order_info(request,usr_email):
         return HttpResponse('bad request',status = 500)
 
 """
-------获取用户发单信息------
+------获取用户发单信息(未隐藏的单)------
 ------接收前端发送的账号，判断是不是GET请求，不是则返回bad request，若是则提取cookie中的用户邮箱和登录状态，
 ------若为已登录则读取订单信息然后把时间转化为字符串后返回给前端
 前端请求方法：GET
@@ -1471,7 +1473,7 @@ def get_release_order_info(request,usr_email):
 
             try:
                 tab_obj = models.Table.objects.filter(order_boss_email=order_boss_email).order_by('-order_start_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
-                tab_obj1 = models.Table1.objects.filter(order_boss_email=order_boss_email).order_by('-order_end_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
+                tab_obj1 = models.Table1.objects.filter(order_boss_email=order_boss_email,boss_hide_order = NOT_HIDE_ORDER).order_by('-order_end_time').values() #value返回 字典键值对 list能把里面的字典提取出来成为字典列表
             except ObjectDoesNotExist:
                 print('ger order error')
             order_info_list = list(tab_obj) #获取订单信息构成的字典列表
@@ -1634,3 +1636,85 @@ def send_class_reminder(request):
             return JsonResponse(response_data)
     else:
         return HttpResponse('bad request', status = 500)
+
+"""
+------老师隐藏自己接的订单------
+隐藏3 订单完成 5 退款成功 6 订单已经取消 的订单
+------
+
+前端请求方法：POST
+数据类型：form-data
+    登录时获得的cookie
+    订单号 otoken
+
+api:127.0.0.1:8080/orders/whideorder/
+后端返回值: 
+{
+    "is_login": "yes",
+    "is_hide": "yes"
+}
+"""
+
+def worker_hide_order(request):
+    if request.method == 'POST':
+        is_login = request.COOKIES.get('is_login') #获取登录状态
+        order_worker_email = request.COOKIES.get('uemail') #获取员工邮箱
+        order_token = request.POST.get('otoken')
+        response_data ={
+            'is_login':'no',
+            'is_hide':'no',
+        }
+
+        if is_login and models.Table1.objects.filter(order_worker_email = order_worker_email, order_token = order_token).exists() :
+
+            tab_obj = models.Table1.objects.get(order_worker_email = order_worker_email, order_token = order_token)
+            if tab_obj.order_status in [ COMPLETE, REFUND_SUCCESS, CANCELD]:
+                models.Table1.objects.filter(order_worker_email = order_worker_email, order_token = order_token).update(worker_hide_order = HIDE_ORDER)
+                response_data['is_login'] = 'yes'
+                response_data['is_hide'] = 'yes'
+
+        return JsonResponse(response_data)
+
+    else:
+        return HttpResponse('Bad request',status = 500)
+
+"""
+------家长隐藏自己发的订单------
+隐藏3 订单完成 5 退款成功 6 订单已经取消 的订单
+------
+
+前端请求方法：POST
+数据类型：form-data
+    登录时获得的cookie
+    订单号 otoken
+
+api:127.0.0.1:8080/orders/bhideorder/
+后端返回值: 
+{
+    "is_login": "yes",
+    "is_hide": "yes"
+}
+"""
+
+def boss_hide_order(request):
+    if request.method == 'POST':
+        is_login = request.COOKIES.get('is_login') #获取登录状态
+        order_boss_email = request.COOKIES.get('uemail') #获取家长邮箱
+        order_token = request.POST.get('otoken')
+        response_data ={
+            'is_login':'no',
+            'is_hide':'no',
+        }
+
+        if is_login and models.Table1.objects.filter(order_boss_email = order_boss_email, order_token = order_token).exists() :
+
+            tab_obj = models.Table1.objects.get(order_boss_email = order_boss_email, order_token = order_token)
+            if tab_obj.order_status in [ COMPLETE, REFUND_SUCCESS, CANCELD]:
+                models.Table1.objects.filter(order_boss_email = order_boss_email, order_token = order_token).update(boss_hide_order = HIDE_ORDER)
+                response_data['is_login'] = 'yes'
+                response_data['is_hide'] = 'yes'
+
+        return JsonResponse(response_data)
+
+    else:
+        return HttpResponse('Bad request',status = 500)
